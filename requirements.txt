@@ -1,0 +1,35 @@
+# Poker McPokerface — Python dependencies
+#
+# Core engine, bots/base, tracker, runner, and ui modules use ONLY
+# the Python standard library — they have no external dependencies.
+# Everything below is for the analytics notebook, the Jupyter
+# environment, and the (forthcoming) LLM-backed bot wrappers.
+#
+# Install everything:    pip install -r requirements.txt
+# Anaconda users:         most of this is preinstalled; the install
+#                         is mostly a no-op except for `ollama`.
+# Google Colab:           pandas/matplotlib/jupyter are preinstalled;
+#                         only the LLM packages add new installs.
+
+
+# --- Analytics notebook -----------------------------------------------
+# notebooks/analytics.ipynb groupbys + charts. pandas 2.x reshape
+# patterns and matplotlib 3.5+ styling are what we lean on.
+pandas>=2.0
+matplotlib>=3.5
+
+
+# --- Notebook environment --------------------------------------------
+# Needed to run any of the .ipynb files. If you already use Anaconda
+# you have all of these and pip will skip them.
+jupyter>=1.0
+ipykernel>=6.0
+notebook>=7.0
+
+
+# --- LLM-backed bots (wired up later in bots/ollama_bot.py) ----------
+# The Ollama Python client is the cleanest path for talking to a
+# local Ollama daemon. If you'd rather hit Ollama's REST API directly,
+# `requests` is the only thing you need instead.
+ollama>=0.1.0
+requests>=2.28
