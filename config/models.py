@@ -88,10 +88,10 @@ LOCAL_ROSTER: List[ModelSpec] = [
         notes="Mistral AI. Strong instruction-following at 7B.",
     ),
     ModelSpec(
-        id="qwen3:7b",
+        id="qwen3:8b",
         family="Qwen",
-        size_b=7.0, ram_gb=5.0,
-        notes="Alibaba. Third 7B family for cross-family breadth.",
+        size_b=8.0, ram_gb=5.5,
+        notes="Alibaba. Medium-tier — Qwen3 has no 7B, jumps 4B→8B.",
     ),
     ModelSpec(
         id="deepseek-r1:7b",
