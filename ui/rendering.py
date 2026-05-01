@@ -29,7 +29,9 @@ from __future__ import annotations
 
 from typing import Iterable, Sequence
 
-from engine import Card, GameView, Phase, PlayerStatus, PublicPlayerInfo, Suit
+from engine import (
+    Card, GameView, HandSummary, Phase, PlayerStatus, PublicPlayerInfo, Suit,
+)
 
 
 # Most recent N action rows to show. Past that the prompt gets unwieldy.
@@ -218,3 +220,310 @@ def render_table_text(view: GameView, width: int = 64) -> str:
     lines.append(bar)
 
     return "\n".join(lines)
+
+
+# ----------------------------------------------------------------------
+# Showdown rendering — pretty per-hand result with everyone's cards
+# ----------------------------------------------------------------------
+# Used at the end of a hand to show winners + per-seat outcomes. The
+# `reveal_folded` flag controls whether folded players' cards are shown
+# (full information for analysis) or hidden (real-poker realism). For
+# this project we default to True — the brief is research-focused and
+# seeing what opponents actually held is far more useful than
+# preserving table realism.
+
+def render_showdown_text(
+    summary: HandSummary, reveal_folded: bool = True,
+) -> str:
+    """Plain-text showdown summary. Returns the full block as one string.
+
+    Shows: hand id, winners with chip awards, then a per-seat row with
+    each player's final hand category, the cards themselves, ending
+    chip count, and net change. Folded players' cards are revealed iff
+    `reveal_folded=True`.
+    """
+    lines = [f"=== Hand {summary.hand_id} complete ==="]
+
+    # Winners line. Multiple rows possible per pot in side-pot hands.
+    if summary.winners:
+        winners_str = ", ".join(
+            f"{name} +{chips}" for name, chips in summary.winners
+        )
+        lines.append(f"Winners: {winners_str}")
+    else:
+        lines.append("Winners: (none)")
+
+    lines.append("")
+    lines.append(f"  {'Player':<10s} {'Chips':>6s} {'Δ':>6s}  Hand")
+    for sr in summary.seat_results:
+        cards_str = (
+            " ".join(str(c) for c in sr.final_hand) if sr.final_hand else "—"
+        )
+
+        if sr.folded:
+            if reveal_folded and sr.final_hand:
+                # Show what they walked away from. Note: folded players'
+                # hands aren't run through the evaluator (they're not
+                # eligible to win), so we just label them "folded" and
+                # let the cards speak for themselves.
+                hand_display = f"{'(folded)':<14s}  [{cards_str}]"
+            else:
+                hand_display = "(folded)"
+        elif sr.final_evaluation:
+            category = sr.final_evaluation.category.label
+            hand_display = f"{category:<14s}  [{cards_str}]"
+        else:
+            hand_display = "—"
+
+        delta = f"{sr.net_change:+d}"
+        # A small visual cue for winners — easy to scan a long table.
+        winner_tag = " <-- won" if any(
+            w[0] == sr.name for w in summary.winners
+        ) else ""
+        lines.append(
+            f"  {sr.name:<10s} {sr.ending_chips:>6d} {delta:>6s}  "
+            f"{hand_display}{winner_tag}"
+        )
+    return "\n".join(lines)
+
+
+def render_showdown_html(
+    summary: HandSummary, reveal_folded: bool = True,
+) -> str:
+    """HTML showdown summary, intended for IPython.display in a notebook.
+    Same information as the text version, but with proper card faces
+    and a green-felt frame to match the table renderer."""
+
+    # Header with the hand id and winners.
+    if summary.winners:
+        winners_str = ", ".join(
+            f"<b>{name}</b> +{chips}" for name, chips in summary.winners
+        )
+    else:
+        winners_str = "<i>(none)</i>"
+
+    rows_html = []
+    for sr in summary.seat_results:
+        is_winner = any(w[0] == sr.name for w in summary.winners)
+        cards_html = (
+            "".join(render_card_html(c) for c in sr.final_hand)
+            if sr.final_hand else
+            f'<span style="color:{_TEXT_MUTED};">—</span>'
+        )
+
+        if sr.folded:
+            category_text = "(folded)"
+            row_label_colour = _TEXT_MUTED
+            cards_disp = cards_html if (reveal_folded and sr.final_hand) else (
+                f'<span style="color:{_TEXT_MUTED};">cards hidden</span>'
+            )
+        elif sr.final_evaluation:
+            category_text = sr.final_evaluation.category.label
+            row_label_colour = "#f5e063" if is_winner else _TEXT_LIGHT
+            cards_disp = cards_html
+        else:
+            category_text = "—"
+            row_label_colour = _TEXT_MUTED
+            cards_disp = cards_html
+
+        delta_colour = "#9bd6a8" if sr.net_change > 0 else (
+            "#e76f51" if sr.net_change < 0 else _TEXT_MUTED
+        )
+        winner_marker = (
+            ' <span style="color:#f5e063; font-weight:600;">★ WON</span>'
+            if is_winner else ""
+        )
+
+        rows_html.append(
+            f'<tr>'
+            f'<td style="padding:6px 12px; color:{row_label_colour}; '
+            f'font-weight:{"700" if is_winner else "500"};">'
+            f'{sr.name}{winner_marker}</td>'
+            f'<td style="padding:6px 12px; text-align:right; '
+            f'color:{_TEXT_LIGHT};">{sr.ending_chips}</td>'
+            f'<td style="padding:6px 12px; text-align:right; '
+            f'color:{delta_colour}; font-family:monospace;">'
+            f'{sr.net_change:+d}</td>'
+            f'<td style="padding:6px 12px; color:{row_label_colour};">'
+            f'{category_text}</td>'
+            f'<td style="padding:6px 12px;">{cards_disp}</td>'
+            f'</tr>'
+        )
+
+    return (
+        f'<div style="background:{_FELT_BG}; border:6px solid {_FELT_BORDER}; '
+        f'border-radius:14px; padding:18px; max-width:780px; '
+        f'font-family:system-ui,-apple-system,sans-serif; color:{_TEXT_LIGHT};">'
+        f'<div style="font-size:18px; font-weight:600; margin-bottom:6px;">'
+        f'Hand {summary.hand_id} — Showdown</div>'
+        f'<div style="color:{_TEXT_MUTED}; font-size:13px; margin-bottom:14px;">'
+        f'Winners: {winners_str}</div>'
+        f'<table style="width:100%; border-collapse:collapse; font-size:14px;">'
+        f'<thead><tr style="border-bottom:1px solid rgba(255,255,255,0.2); '
+        f'color:{_TEXT_MUTED}; font-size:11px; text-transform:uppercase; '
+        f'letter-spacing:1.5px;">'
+        f'<th style="padding:6px 12px; text-align:left;">Player</th>'
+        f'<th style="padding:6px 12px; text-align:right;">Chips</th>'
+        f'<th style="padding:6px 12px; text-align:right;">Δ</th>'
+        f'<th style="padding:6px 12px; text-align:left;">Category</th>'
+        f'<th style="padding:6px 12px; text-align:left;">Hand</th>'
+        f'</tr></thead>'
+        f'<tbody>{"".join(rows_html)}</tbody>'
+        f'</table>'
+        f'</div>'
+    )
+
+
+# ----------------------------------------------------------------------
+# Showdown rendering — pretty per-hand result with everyone's cards
+# ----------------------------------------------------------------------
+# Used at the end of a hand to show winners + per-seat outcomes. The
+# `reveal_folded` flag controls whether folded players' cards are shown
+# (full information for analysis) or hidden (real-poker realism). For
+# this project we default to True — the brief is research-focused and
+# seeing what opponents actually held is far more useful than
+# preserving table realism.
+
+def render_showdown_text(
+    summary: HandSummary, reveal_folded: bool = True,
+) -> str:
+    """Plain-text showdown summary. Returns the full block as one string.
+
+    Shows: hand id, winners with chip awards, then a per-seat row with
+    each player's final hand category, the cards themselves, ending
+    chip count, and net change. Folded players' cards are revealed iff
+    `reveal_folded=True`.
+    """
+    lines = [f"=== Hand {summary.hand_id} complete ==="]
+
+    if summary.winners:
+        winners_str = ", ".join(
+            f"{name} +{chips}" for name, chips in summary.winners
+        )
+        lines.append(f"Winners: {winners_str}")
+    else:
+        lines.append("Winners: (none)")
+
+    lines.append("")
+    lines.append(f"  {'Player':<10s} {'Chips':>6s} {'Delta':>6s}  Hand")
+    for sr in summary.seat_results:
+        cards_str = (
+            " ".join(str(c) for c in sr.final_hand) if sr.final_hand else "-"
+        )
+
+        if sr.folded:
+            if reveal_folded and sr.final_hand:
+                hand_display = f"{'(folded)':<14s}  [{cards_str}]"
+            else:
+                hand_display = "(folded)"
+        elif sr.final_evaluation:
+            category = sr.final_evaluation.category.label
+            hand_display = f"{category:<14s}  [{cards_str}]"
+        else:
+            hand_display = "-"
+
+        delta = f"{sr.net_change:+d}"
+        winner_tag = " <-- won" if any(
+            w[0] == sr.name for w in summary.winners
+        ) else ""
+        lines.append(
+            f"  {sr.name:<10s} {sr.ending_chips:>6d} {delta:>6s}  "
+            f"{hand_display}{winner_tag}"
+        )
+    return "\n".join(lines)
+
+
+def render_showdown_html(
+    summary: HandSummary, reveal_folded: bool = True,
+) -> str:
+    """HTML showdown summary, intended for IPython.display in a notebook.
+    Same information as the text version, but with proper card faces
+    and a green-felt frame to match the table renderer."""
+
+    if summary.winners:
+        winners_str = ", ".join(
+            f"<b>{name}</b> +{chips}" for name, chips in summary.winners
+        )
+    else:
+        winners_str = "<i>(none)</i>"
+
+    rows_html = []
+    for sr in summary.seat_results:
+        is_winner = any(w[0] == sr.name for w in summary.winners)
+        cards_html = (
+            "".join(render_card_html(c) for c in sr.final_hand)
+            if sr.final_hand else
+            f'<span style="color:{_TEXT_MUTED};">-</span>'
+        )
+
+        if sr.folded:
+            category_text = "(folded)"
+            row_label_colour = _TEXT_MUTED
+            cards_disp = cards_html if (reveal_folded and sr.final_hand) else (
+                f'<span style="color:{_TEXT_MUTED};">cards hidden</span>'
+            )
+        elif sr.final_evaluation:
+            category_text = sr.final_evaluation.category.label
+            row_label_colour = "#f5e063" if is_winner else _TEXT_LIGHT
+            cards_disp = cards_html
+        else:
+            category_text = "-"
+            row_label_colour = _TEXT_MUTED
+            cards_disp = cards_html
+
+        delta_colour = "#9bd6a8" if sr.net_change > 0 else (
+            "#e76f51" if sr.net_change < 0 else _TEXT_MUTED
+        )
+        winner_marker = (
+            ' <span style="color:#f5e063; font-weight:600;">* WON</span>'
+            if is_winner else ""
+        )
+
+        rows_html.append(
+            f'<tr>'
+            f'<td style="padding:6px 12px; color:{row_label_colour}; '
+            f'font-weight:{"700" if is_winner else "500"};">'
+            f'{sr.name}{winner_marker}</td>'
+            f'<td style="padding:6px 12px; text-align:right; '
+            f'color:{_TEXT_LIGHT};">{sr.ending_chips}</td>'
+            f'<td style="padding:6px 12px; text-align:right; '
+            f'color:{delta_colour}; font-family:monospace;">'
+            f'{sr.net_change:+d}</td>'
+            f'<td style="padding:6px 12px; color:{row_label_colour};">'
+            f'{category_text}</td>'
+            f'<td style="padding:6px 12px;">{cards_disp}</td>'
+            f'</tr>'
+        )
+
+    return (
+        f'<div style="background:{_FELT_BG}; border:6px solid {_FELT_BORDER}; '
+        f'border-radius:14px; padding:18px; max-width:780px; '
+        f'font-family:system-ui,-apple-system,sans-serif; color:{_TEXT_LIGHT};">'
+        f'<div style="font-size:18px; font-weight:600; margin-bottom:6px;">'
+        f'Hand {summary.hand_id} - Showdown</div>'
+        f'<div style="color:{_TEXT_MUTED}; font-size:13px; margin-bottom:14px;">'
+        f'Winners: {winners_str}</div>'
+        f'<table style="width:100%; border-collapse:collapse; font-size:14px;">'
+        f'<thead><tr style="border-bottom:1px solid rgba(255,255,255,0.2); '
+        f'color:{_TEXT_MUTED}; font-size:11px; text-transform:uppercase; '
+        f'letter-spacing:1.5px;">'
+        f'<th style="padding:6px 12px; text-align:left;">Player</th>'
+        f'<th style="padding:6px 12px; text-align:right;">Chips</th>'
+        f'<th style="padding:6px 12px; text-align:right;">Delta</th>'
+        f'<th style="padding:6px 12px; text-align:left;">Category</th>'
+        f'<th style="padding:6px 12px; text-align:left;">Hand</th>'
+        f'</tr></thead>'
+        f'<tbody>{"".join(rows_html)}</tbody>'
+        f'</table>'
+        f'</div>'
+    )
+        f'<th style="padding:6px 12px; text-align:left;">Player</th>'
+        f'<th style="padding:6px 12px; text-align:right;">Chips</th>'
+        f'<th style="padding:6px 12px; text-align:right;">Delta</th>'
+        f'<th style="padding:6px 12px; text-align:left;">Category</th>'
+        f'<th style="padding:6px 12px; text-align:left;">Hand</th>'
+        f'</tr></thead>'
+        f'<tbody>{"".join(rows_html)}</tbody>'
+        f'</table>'
+        f'</div>'
+    )

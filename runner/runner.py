@@ -378,35 +378,4 @@ if __name__ == "__main__":
 
     # Cleanup
     shutil.rmtree(runs_root)
-    print("\nAll runner.py smoke checks passed.")))
-    except ValueError as e:
-        print(f"  Caught expected ValueError: {e}")
-    try:
-        # Duplicate names
-        bad = [
-            MockBot("Same", aggressive, caller_resp, discard_resp),
-            MockBot("Same", cautious, caller_resp, discard_resp),
-        ]
-        TournamentRunner(bad, RunnerConfig())
-    except ValueError as e:
-        print(f"  Caught expected ValueError: {e}")
-
-    # Cleanup
-    shutil.rmtree(runs_root)
-    print("\nAll runner.py smoke checks passed.")
-)
-    except ValueError as e:
-        print(f"  Caught expected ValueError: {e}")
-    try:
-        # Duplicate names
-        bad = [
-            MockBot("Same", aggressive, caller_resp, discard_resp),
-            MockBot("Same", cautious, caller_resp, discard_resp),
-        ]
-        TournamentRunner(bad, RunnerConfig())
-    except ValueError as e:
-        print(f"  Caught expected ValueError: {e}")
-
-    # Cleanup
-    shutil.rmtree(runs_root)
     print("\nAll runner.py smoke checks passed.")

@@ -10,7 +10,12 @@ Public surface:
 """
 
 from .human import HumanAgent, parse_action_input, parse_discard_input
-from .rendering import render_table_html, render_table_text
+from .rendering import (
+    render_table_html,
+    render_table_text,
+    render_showdown_html,
+    render_showdown_text,
+)
 
 __all__ = [
     "HumanAgent",
@@ -18,4 +23,6 @@ __all__ = [
     "parse_discard_input",
     "render_table_html",
     "render_table_text",
+    "render_showdown_html",
+    "render_showdown_text",
 ]
