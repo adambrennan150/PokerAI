@@ -1,0 +1,23 @@
+Session: validation_heads_up_v1
+  Total reasoning rows : 146
+  Parse-error rows     : 1 (0.7%)
+
+=== Errors by player ===
+  Llama-TAG                1
+
+=== Errors by decision_type ===
+  action     1
+
+=== Errors by error message (first 60 chars) ===
+  [1] "fallback: keyword scan (json shape error: raise requires 'am"
+
+=== Per-error details ===
+
+--- Error #1 of 1 ---
+  hand_id      : 6
+  player       : Llama-TAG  (model=llama3.1:8b, personality=tight_aggressive)
+  phase        : first_betting
+  decision_type: action
+  parse_error  : "fallback: keyword scan (json shape error: raise requires 'amount')"
+  decided      : raise:5
+  raw_response : '{\n  "reasoning": "My hand has a decent chance of improvement, but I need to build the pot and put pressure on my opponents.",\n  "action": "raise",\n  "amount": null\n}'
