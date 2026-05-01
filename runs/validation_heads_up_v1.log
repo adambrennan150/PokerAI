@@ -1,0 +1,48 @@
+=== Heads-up validation: llama3.1:8b (TAG) vs mistral (Station) ===
+  15 hands, seed 42, both LLMs + 2 MockBots
+
+  Hand   1: pot=   8  deltas=[Llama-TAG-2 Mistral-Station+6 MockTight-2 MockCaller-2]  winners=[Mistral-Station+8]
+  Hand   2: pot=   8  deltas=[Llama-TAG-2 Mistral-Station+6 MockTight-2 MockCaller-2]  winners=[Mistral-Station+8]
+  Hand   3: pot=  38  deltas=[Llama-TAG-12 Mistral-Station-12 MockTight-2 MockCaller+26]  winners=[MockCaller+8, MockCaller+30]
+  Hand   4: pot=   8  deltas=[Llama-TAG-2 Mistral-Station+6 MockTight-2 MockCaller-2]  winners=[Mistral-Station+8]
+  Hand   5: pot=  38  deltas=[Llama-TAG-12 Mistral-Station+26 MockTight-2 MockCaller-12]  winners=[Mistral-Station+8, Mistral-Station+30]
+  Hand   6: pot=  23  deltas=[Llama-TAG-7 Mistral-Station+16 MockTight-2 MockCaller-7]  winners=[Mistral-Station+8, Mistral-Station+15]
+  Hand   7: pot= 158  deltas=[Llama-TAG-52 Mistral-Station-52 MockTight-2 MockCaller+106]  winners=[MockCaller+8, MockCaller+150]
+  Hand   8: pot=   8  deltas=[Llama-TAG-2 Mistral-Station+6 MockTight-2 MockCaller-2]  winners=[Mistral-Station+8]
+  Hand   9: pot=   8  deltas=[Llama-TAG-2 Mistral-Station+6 MockTight-2 MockCaller-2]  winners=[Mistral-Station+8]
+  Hand  10: pot=   8  deltas=[Llama-TAG-2 Mistral-Station+6 MockTight-2 MockCaller-2]  winners=[Mistral-Station+8]
+  Hand  11: pot=   8  deltas=[Llama-TAG-2 Mistral-Station+6 MockTight-2 MockCaller-2]  winners=[Mistral-Station+8]
+  Hand  12: pot=  68  deltas=[Llama-TAG+46 Mistral-Station-22 MockTight-2 MockCaller-22]  winners=[Llama-TAG+8, Llama-TAG+60]
+  Hand  13: pot=   8  deltas=[Llama-TAG-2 Mistral-Station-2 MockTight-2 MockCaller+6]  winners=[MockCaller+8]
+  Hand  14: pot= 158  deltas=[Llama-TAG-52 Mistral-Station-52 MockTight-2 MockCaller+106]  winners=[MockCaller+8, MockCaller+150]
+  Hand  15: pot= 158  deltas=[Llama-TAG+106 Mistral-Station-52 MockTight-2 MockCaller-52]  winners=[Llama-TAG+8, Llama-TAG+150]
+
+Finished in 212.4s (14.2s/hand)
+Session validation_heads_up_v1 — 15 hands (completed)
+  MockCaller              337
+  Llama-TAG               201
+  MockTight               170
+  Mistral-Station          92
+
+=== Per-bot LLM diagnostics ===
+  Llama-TAG:
+    LLM calls         : 33
+    Parse-error rate  : 1/33 (3%)
+  Mistral-Station:
+    LLM calls         : 46
+    Parse-error rate  : 0/46 (0%)
+
+=== Sample reasoning (one per LLM bot) ===
+
+  Llama-TAG (hand 1, first_betting):
+    decision : fold
+    reasoning: "I'm folding, my starting hand is too weak to continue."
+
+  Mistral-Station (hand 1, first_betting):
+    decision : call
+    reasoning: 'As a calling station, I prefer to see the showdown with my hand, so I will call.'
+
+=== Session persisted ===
+  Path        : /home/geeko/projects/adam/PokerAI/runs/validation_heads_up_v1
+  In analytics: open notebooks/analytics.ipynb, set SESSION_ID = 'validation_heads_up_v1'
+  Commit      : git add -f runs/validation_heads_up_v1/ && git commit -m 'Heads-up validation run'
