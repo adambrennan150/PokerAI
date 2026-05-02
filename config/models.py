@@ -39,14 +39,20 @@ from typing import List
 class ModelSpec:
     """One LLM in the roster.
 
-    `id`      — Ollama tag, must match what `ollama list` reports.
-    `family`  — Vendor / training family. Used as the tracker's
-                "best LLM family" groupby key for the analytics.
-    `size_b`  — Parameter count in billions. Useful for size-vs-skill
-                plots in the report.
-    `ram_gb`  — Approximate VRAM footprint (4-bit quant). Used by the
-                tournament driver to pack tables that fit in budget.
-    `notes`   — Short human description for logs and reports.
+    `id`             — Ollama tag, must match what `ollama list` reports.
+    `family`         — Vendor / training family. Tracker's "best LLM
+                       family" groupby key.
+    `size_b`         — Parameter count in billions.
+    `ram_gb`         — Approximate VRAM footprint (4-bit quant). Used
+                       by the tournament driver to pack tables.
+    `notes`          — Short human description.
+    `num_predict`    — Per-model token budget. Reasoning-style models
+                       (DeepSeek-R1, Qwen3 in thinking mode) need much
+                       more headroom than vanilla instruction-tuned
+                       models, otherwise they exhaust the budget inside
+                       their <think> block and produce empty output.
+    `system_prefix`  — Optional text prepended to every system prompt.
+                       Used to disable thinking on Qwen3 via `/no_think`.
     """
 
     id: str
@@ -54,6 +60,8 @@ class ModelSpec:
     size_b: float
     ram_gb: float
     notes: str = ""
+    num_predict: int = 512
+    system_prefix: str = ""
 
     def __str__(self) -> str:
         return self.id
@@ -92,18 +100,30 @@ LOCAL_ROSTER: List[ModelSpec] = [
         family="Qwen",
         size_b=8.0, ram_gb=5.5,
         notes="Alibaba. Medium-tier — Qwen3 has no 7B, jumps 4B→8B.",
+        # /no_think disables Qwen3's reasoning preamble so the response
+        # is direct JSON. Without this, the <think> block consumed the
+        # whole token budget in the v1 round-robin and the bot never
+        # actually answered.
+        system_prefix="/no_think",
+        num_predict=1024,
     ),
     ModelSpec(
         id="deepseek-r1:7b",
         family="DeepSeek",
         size_b=7.0, ram_gb=5.0,
         notes="Visible chain-of-thought reasoning — wildcard for poker.",
+        # DeepSeek-R1 has no thinking-disable toggle; its reasoning is
+        # baked in. We give it a 4k token budget so thinking can run to
+        # completion AND leave room for the final JSON answer.
+        num_predict=4096,
     ),
     ModelSpec(
         id="qwen3:14b",
         family="Qwen",
         size_b=14.0, ram_gb=12.0,
         notes="Larger class — does 14B meaningfully outperform 7B?",
+        system_prefix="/no_think",
+        num_predict=1024,
     ),
 ]
 
@@ -115,6 +135,11 @@ LOCAL_ROSTER: List[ModelSpec] = [
 # ----------------------------------------------------------------------
 _COLAB_IDS = {"gemma3:1b", "llama3.1:8b", "mistral", "deepseek-r1:7b"}
 COLAB_ROSTER: List[ModelSpec] = [m for m in LOCAL_ROSTER if m.id in _COLAB_IDS]
+
+# String id → ModelSpec lookup. Lets the tournament driver materialise
+# bots without needing the full ModelSpec passed around — it can resolve
+# `plan.model_id` to the spec at run time.
+BY_ID: dict = {m.id: m for m in LOCAL_ROSTER}
 
 
 # ----------------------------------------------------------------------

@@ -64,7 +64,9 @@ class OllamaBot(BaseBot):
 
     DEFAULT_HOST = "http://localhost:11434"
     DEFAULT_TEMPERATURE = 0.7
-    DEFAULT_NUM_PREDICT = 250
+    DEFAULT_NUM_PREDICT = 512        # bumped from 250 after v1 round-robin
+                                     # showed reasoning models exhausting
+                                     # the budget inside <think> blocks.
 
     def __init__(
         self,
@@ -75,6 +77,7 @@ class OllamaBot(BaseBot):
         host: str = DEFAULT_HOST,
         temperature: float = DEFAULT_TEMPERATURE,
         num_predict: int = DEFAULT_NUM_PREDICT,
+        system_prefix: str = "",
     ) -> None:
         if ollama is None:
             raise ImportError(
@@ -86,15 +89,26 @@ class OllamaBot(BaseBot):
         self._client = ollama.Client(host=host)
         self._temperature = temperature
         self._num_predict = num_predict
+        # `/no_think` for Qwen3 lives here; empty string for vanilla models.
+        self._system_prefix = system_prefix
 
     def _generate(self, system_prompt: str, user_prompt: str) -> str:
         """Send (system, user) to the Ollama daemon and return the raw
         text. Errors propagate; the inherited `_safe_generate` wrapper
-        handles them."""
+        handles them.
+
+        If `system_prefix` is set, it's prepended to the system prompt
+        with a blank line in between — used to inject the `/no_think`
+        directive on Qwen3 models so they skip the reasoning preamble.
+        """
+        full_system = (
+            f"{self._system_prefix}\n\n{system_prompt}"
+            if self._system_prefix else system_prompt
+        )
         response = self._client.chat(
             model=self.model_id,
             messages=[
-                {"role": "system", "content": system_prompt},
+                {"role": "system", "content": full_system},
                 {"role": "user",   "content": user_prompt},
             ],
             options={
@@ -211,6 +225,20 @@ if __name__ == "__main__":
     parse_errors = [r for r in llama_rows if r["parse_error"]]
     print(f"  Parse-error rate: {len(parse_errors)}/{len(llama_rows)} "
           f"({100 * len(parse_errors) / max(1, len(llama_rows)):.0f}%)")
+    if llama_rows:
+        sample = llama_rows[0]
+        print(f"\n  Sample reasoning (hand {sample['hand_id']}, "
+              f"{sample['phase']}, {sample['decision_type']}):")
+        print(f"    decision : {sample['decided_action'] or sample['decided_discards']}")
+        print(f"    reasoning: {sample['reasoning']!r}")
+        if sample["parse_error"]:
+            print(f"    NOTE: parse_error = {sample['parse_error']!r}")
+            print(f"    raw      : {sample['raw_response'][:200]!r}")
+
+    shutil.rmtree(runs_root)
+    print("\nSmoke test finished — review the output above to confirm "
+          "responses look like real LLM-flavoured reasoning.")
+rrors) / max(1, len(llama_rows)):.0f}%)")
     if llama_rows:
         sample = llama_rows[0]
         print(f"\n  Sample reasoning (hand {sample['hand_id']}, "

@@ -125,13 +125,21 @@ def build_plans() -> List[BotPlan]:
 
 
 def materialise_bot(plan: BotPlan) -> BaseBot:
-    """Construct a real OllamaBot from a plan. Imported lazily so that
-    the dry-run path doesn't require `ollama` to be installed."""
+    """Construct a real OllamaBot from a plan. Per-model overrides
+    (`num_predict`, `system_prefix`) are pulled from `config.models.BY_ID`
+    so that reasoning-style models get the token headroom they need.
+
+    Imported lazily so that the dry-run path doesn't require `ollama`."""
     from bots import OllamaBot   # lazy import — only run-time path
+    from config.models import BY_ID
+
+    spec = BY_ID[plan.model_id]
     return OllamaBot(
         name=plan.name,
         personality=plan.personality,
         model_id=plan.model_id,
+        num_predict=spec.num_predict,
+        system_prefix=spec.system_prefix,
     )
 
 
@@ -395,4 +403,32 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    sys.exit(main())
+dels x {len(ALL_PERSONALITIES)} personalities)")
+
+    # 2. Generate balanced tables.
+    tables = generate_balanced_tables(
+        plans, NUM_TABLES, TABLE_SIZE, rng=rng,
+    )
+
+    # 3. Sort for VRAM-swap efficiency.
+    tables = sort_tables_by_model_membership(tables)
+
+    # 4. Print the plan.
+    print_schedule(tables)
+
+    if dry_run:
+        print("\n--dry-run: schedule printed, not executing.")
+        return 0
+
+    # 5. Run - real OllamaBots get constructed inside run_tournament.
+    runs_root = PROJECT_ROOT / "runs"
+    runs_root.mkdir(exist_ok=True)
+    run_tournament(tables, plans, runs_root)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+n__":
     sys.exit(main())
