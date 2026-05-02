@@ -1,0 +1,43 @@
+{
+  "session_id": "validation_reasoning_models_v1",
+  "started_at": "2026-05-02T21:04:26",
+  "ended_at": "2026-05-02T21:34:09",
+  "seats": [
+    {
+      "name": "DeepSeek-TAG",
+      "model_id": "deepseek-r1:7b",
+      "personality_id": "tight_aggressive",
+      "personality_description": "Folds weak hands; raises strong ones. The textbook winning style.",
+      "starting_chips": 200
+    },
+    {
+      "name": "Qwen8b-Bluffer",
+      "model_id": "qwen3:8b",
+      "personality_id": "bluffer",
+      "personality_description": "Bluffs with weak hands, slow-plays strong ones. Highly deceptive.",
+      "starting_chips": 200
+    },
+    {
+      "name": "Qwen14b-LAG",
+      "model_id": "qwen3:14b",
+      "personality_id": "loose_aggressive",
+      "personality_description": "Plays many hands aggressively; raises and bluffs constantly.",
+      "starting_chips": 200
+    },
+    {
+      "name": "MockFiller",
+      "model_id": "mock-filler",
+      "personality_id": "calling_station",
+      "personality_description": "Loose-passive. Calls everything; rarely raises. Hard to bluff.",
+      "starting_chips": 200
+    }
+  ],
+  "game_config": {
+    "num_hands": 10,
+    "ante": 2,
+    "min_bet": 5,
+    "starting_chips": 200,
+    "broke_player_policy": "rebuy",
+    "seed": 42
+  }
+}
