@@ -140,6 +140,7 @@ def materialise_bot(plan: BotPlan) -> BaseBot:
         model_id=plan.model_id,
         num_predict=spec.num_predict,
         system_prefix=spec.system_prefix,
+        think=spec.think,
     )
 
 
@@ -403,32 +404,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
-dels x {len(ALL_PERSONALITIES)} personalities)")
-
-    # 2. Generate balanced tables.
-    tables = generate_balanced_tables(
-        plans, NUM_TABLES, TABLE_SIZE, rng=rng,
-    )
-
-    # 3. Sort for VRAM-swap efficiency.
-    tables = sort_tables_by_model_membership(tables)
-
-    # 4. Print the plan.
-    print_schedule(tables)
-
-    if dry_run:
-        print("\n--dry-run: schedule printed, not executing.")
-        return 0
-
-    # 5. Run - real OllamaBots get constructed inside run_tournament.
-    runs_root = PROJECT_ROOT / "runs"
-    runs_root.mkdir(exist_ok=True)
-    run_tournament(tables, plans, runs_root)
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())
-n__":
     sys.exit(main())

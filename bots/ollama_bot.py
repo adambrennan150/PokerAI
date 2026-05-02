@@ -78,6 +78,7 @@ class OllamaBot(BaseBot):
         temperature: float = DEFAULT_TEMPERATURE,
         num_predict: int = DEFAULT_NUM_PREDICT,
         system_prefix: str = "",
+        think: Optional[bool] = None,
     ) -> None:
         if ollama is None:
             raise ImportError(
@@ -91,6 +92,11 @@ class OllamaBot(BaseBot):
         self._num_predict = num_predict
         # `/no_think` for Qwen3 lives here; empty string for vanilla models.
         self._system_prefix = system_prefix
+        # `think=False` is the canonical way to disable thinking on
+        # Qwen3 models — more reliable than the `/no_think` prompt
+        # directive, which is sometimes ignored. None means leave the
+        # model's default behaviour alone.
+        self._think = think
 
     def _generate(self, system_prompt: str, user_prompt: str) -> str:
         """Send (system, user) to the Ollama daemon and return the raw
@@ -105,17 +111,22 @@ class OllamaBot(BaseBot):
             f"{self._system_prefix}\n\n{system_prompt}"
             if self._system_prefix else system_prompt
         )
-        response = self._client.chat(
-            model=self.model_id,
-            messages=[
+        chat_kwargs = {
+            "model": self.model_id,
+            "messages": [
                 {"role": "system", "content": full_system},
                 {"role": "user",   "content": user_prompt},
             ],
-            options={
+            "options": {
                 "temperature": self._temperature,
                 "num_predict": self._num_predict,
             },
-        )
+        }
+        # Only pass `think` if explicitly set — leaving it out preserves
+        # the model's default behaviour for non-reasoning models.
+        if self._think is not None:
+            chat_kwargs["think"] = self._think
+        response = self._client.chat(**chat_kwargs)
         # The ollama Python client returns a dict-compatible object
         # whose ['message']['content'] holds the assistant's text.
         # Index-style access works across recent versions.
@@ -223,3 +234,11 @@ if __name__ == "__main__":
     llama_rows = [r for r in reasoning_rows if r["player"] == "Llama-Aggro"]
     print(f"\n  Llama-Aggro made {len(llama_rows)} LLM calls.")
     parse_errors = [r for r in llama_rows if r["parse_error"]]
+    print(f"  Parse-error rate: {len(parse_errors)}/{len(llama_rows)}")
+    if llama_rows:
+        s = llama_rows[0]
+        print(f"\n  Sample reasoning (hand {s['hand_id']}, {s['phase']}, {s['decision_type']}):")
+        print(f"    decision : {s['decided_action'] or s['decided_discards']}")
+        print(f"    reasoning: {s['reasoning']!r}")
+
+    print("\nSmoke test finished.")

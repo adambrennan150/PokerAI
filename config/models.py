@@ -62,6 +62,11 @@ class ModelSpec:
     notes: str = ""
     num_predict: int = 512
     system_prefix: str = ""
+    # think=None     -> leave model's default behaviour alone
+    # think=False    -> disable thinking via Ollama's API parameter
+    #                   (more reliable than the /no_think prompt directive)
+    # think=True     -> force thinking on (rarely needed)
+    think: object = None       # Optional[bool], using object to keep dataclass simple
 
     def __str__(self) -> str:
         return self.id
@@ -100,12 +105,14 @@ LOCAL_ROSTER: List[ModelSpec] = [
         family="Qwen",
         size_b=8.0, ram_gb=5.5,
         notes="Alibaba. Medium-tier — Qwen3 has no 7B, jumps 4B→8B.",
-        # /no_think disables Qwen3's reasoning preamble so the response
-        # is direct JSON. Without this, the <think> block consumed the
-        # whole token budget in the v1 round-robin and the bot never
-        # actually answered.
-        system_prefix="/no_think",
+        # think=False is the canonical Ollama API parameter for
+        # disabling Qwen3's reasoning. The /no_think prompt directive
+        # alone proved unreliable in validation v1 (~67% empty responses
+        # — the model sometimes still produced a <think> block that
+        # Ollama stripped, leaving nothing).
+        system_prefix="/no_think",   # belt-and-suspenders
         num_predict=1024,
+        think=False,
     ),
     ModelSpec(
         id="deepseek-r1:7b",
@@ -124,6 +131,7 @@ LOCAL_ROSTER: List[ModelSpec] = [
         notes="Larger class — does 14B meaningfully outperform 7B?",
         system_prefix="/no_think",
         num_predict=1024,
+        think=False,
     ),
 ]
 
@@ -151,8 +159,7 @@ if __name__ == "__main__":
         print(f"\n=== {label} ({len(roster)} models, ~{total_ram:.1f} GB total) ===")
         print(f"  {'ID':<22s} {'FAMILY':<10s} {'SIZE':>6s}  {'RAM':>5s}  NOTES")
         for m in roster:
-            print(f"  {m.id:<22s} {m.family:<10s} "
-                  f"{m.size_b:>5.1f}B  {m.ram_gb:>4.1f}G  {m.notes}")
+            print(f"  {m.id:<22s} {m.family:<10s}")
 
     _show("LOCAL roster", LOCAL_ROSTER)
     _show("COLAB roster", COLAB_ROSTER)

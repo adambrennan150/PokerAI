@@ -71,6 +71,7 @@ def make_ollama_bot(name, personality, model_id):
         model_id=model_id,
         num_predict=spec.num_predict,
         system_prefix=spec.system_prefix,
+        think=spec.think,
     )
 
 
@@ -183,5 +184,4 @@ else:
     print("  before scaling up.")
 
 print(f"\nSession persisted: {result.session_dir}")
-print(f"Commit: git add -f runs/{SESSION_ID}/ && git commit -m "
-      f"'Validation: reasoning models with bumped num_predict + /no_think'")
+print(f"Commit cmd: git add -f runs/{SESSION_ID}/ && git commit -m 'Validation: reasoning models'")
