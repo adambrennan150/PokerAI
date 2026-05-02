@@ -223,32 +223,3 @@ if __name__ == "__main__":
     llama_rows = [r for r in reasoning_rows if r["player"] == "Llama-Aggro"]
     print(f"\n  Llama-Aggro made {len(llama_rows)} LLM calls.")
     parse_errors = [r for r in llama_rows if r["parse_error"]]
-    print(f"  Parse-error rate: {len(parse_errors)}/{len(llama_rows)} "
-          f"({100 * len(parse_errors) / max(1, len(llama_rows)):.0f}%)")
-    if llama_rows:
-        sample = llama_rows[0]
-        print(f"\n  Sample reasoning (hand {sample['hand_id']}, "
-              f"{sample['phase']}, {sample['decision_type']}):")
-        print(f"    decision : {sample['decided_action'] or sample['decided_discards']}")
-        print(f"    reasoning: {sample['reasoning']!r}")
-        if sample["parse_error"]:
-            print(f"    NOTE: parse_error = {sample['parse_error']!r}")
-            print(f"    raw      : {sample['raw_response'][:200]!r}")
-
-    shutil.rmtree(runs_root)
-    print("\nSmoke test finished — review the output above to confirm "
-          "responses look like real LLM-flavoured reasoning.")
-rrors) / max(1, len(llama_rows)):.0f}%)")
-    if llama_rows:
-        sample = llama_rows[0]
-        print(f"\n  Sample reasoning (hand {sample['hand_id']}, "
-              f"{sample['phase']}, {sample['decision_type']}):")
-        print(f"    decision : {sample['decided_action'] or sample['decided_discards']}")
-        print(f"    reasoning: {sample['reasoning']!r}")
-        if sample["parse_error"]:
-            print(f"    NOTE: parse_error = {sample['parse_error']!r}")
-            print(f"    raw      : {sample['raw_response'][:200]!r}")
-
-    shutil.rmtree(runs_root)
-    print("\nSmoke test finished — review the output above to confirm "
-          "responses look like real LLM-flavoured reasoning.")
