@@ -1,0 +1,70 @@
+Roster: 35 bot plans (7 models x 5 personalities)
+
+=== Schedule (4 tables x 5 hands) ===
+  T1: models=['deepseek-r1:7b', 'gemma3:1b', 'llama3.1:8b', 'mistral']
+      deepseek-r1-7b-rock
+      mistral-rock
+      gemma3-1b-tight_aggressive
+      llama31-8b-tight_aggressive
+  T2: models=['deepseek-r1:7b', 'gemma3:1b', 'phi4-mini', 'qwen3:14b']
+      phi4-mini-tight_aggressive
+      deepseek-r1-7b-rock
+      gemma3-1b-rock
+      qwen3-14b-bluffer
+  T3: models=['gemma3:1b', 'llama3.1:8b', 'qwen3:14b']
+      gemma3-1b-loose_aggressive
+      qwen3-14b-rock
+      llama31-8b-bluffer
+      llama31-8b-rock
+  T4: models=['gemma3:1b', 'mistral', 'phi4-mini']
+      mistral-tight_aggressive
+      mistral-rock
+      phi4-mini-rock
+      gemma3-1b-loose_aggressive
+
+=== Starting tournament — writing to runs/validation_full_roster_v1 ===
+
+--- Table 1/4 ---
+    deepseek-r1-7b-rock
+    mistral-rock
+    gemma3-1b-tight_aggressive
+    llama31-8b-tight_aggressive
+    Done in 276s (55.2s/hand)
+
+--- Table 2/4 ---
+    phi4-mini-tight_aggressive
+    deepseek-r1-7b-rock
+    gemma3-1b-rock
+    qwen3-14b-bluffer
+    Done in 239s (47.7s/hand)
+
+--- Table 3/4 ---
+    gemma3-1b-loose_aggressive
+    qwen3-14b-rock
+    llama31-8b-bluffer
+    llama31-8b-rock
+    Done in 213s (42.6s/hand)
+
+--- Table 4/4 ---
+    mistral-tight_aggressive
+    mistral-rock
+    phi4-mini-rock
+    gemma3-1b-loose_aggressive
+    Done in 95s (18.9s/hand)
+
+=== Tournament complete in 13.7 min ===
+
+=== Per-model diagnostics ===
+  model                 calls  errors   err%  mean_len  result
+  deepseek-r1:7b           15       0   0.0%      276  [PASS]
+  gemma3:1b                62       2   3.2%      346  [PASS]
+  llama3.1:8b              38       4  10.5%      176  [PASS]
+  mistral                  45       0   0.0%      217  [PASS]
+  phi4-mini                15       0   0.0%      146  [PASS]
+  qwen3:14b                23       0   0.0%      205  [PASS]
+
+  NOTE: these models didn't appear in any table this run (small sample): ['qwen3:8b']
+
+=== Verdict ===
+  All seated models passed, but some didn't get sampled.
+  Re-run with NUM_TABLES bumped to 6+ for full coverage.
