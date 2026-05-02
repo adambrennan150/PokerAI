@@ -298,7 +298,7 @@ def run_tournament(
             starting_chips=STARTING_CHIPS,
             broke_player_policy=BROKE_PLAYER_POLICY,
             seed=SEED,
-            roster_size=len(full_roster),
+            roster_size=len(full_plans),
         )
 
         global_hand_id = count(1)
