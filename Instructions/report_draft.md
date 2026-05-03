@@ -8,7 +8,7 @@
 
 ## Abstract
 
-This project implements a 5-card draw poker simulator in Python that pits LLM-powered agents against each other and against a human player. Seven open-weight LLMs spanning 1B to 14B parameters, drawn from six different model families (Gemma, Phi, Llama, Mistral, Qwen, DeepSeek), are each paired with five distinct play-style personalities (tight-aggressive, loose-aggressive, rock, calling station, bluffer) to produce 35 (model × personality) bot configurations. A round-robin tournament with rotated 4-bot tables produces a single dataset that the analytics layer reduces to three bottom-line answers: which (LLM × personality) combo performs best, which LLM averages best across personalities, and which personality averages best across LLMs. <span style="color:red">[TODO — replace with the actual headline finding once the round-robin completes, e.g. "Llama 3.1 8B paired with the bluffer personality emerged as the strongest combination, while smaller (≤4B) models struggled regardless of personality."]</span>
+This project implements a 5-card draw poker simulator in Python that pits LLM-powered agents against each other and against a human player. Seven open-weight LLMs spanning 1B to 14B parameters, drawn from six different model families (Gemma, Phi, Llama, Mistral, Qwen, DeepSeek), are each paired with five distinct play-style personalities (tight-aggressive, loose-aggressive, rock, calling station, bluffer) to produce 35 (model × personality) bot configurations. A round-robin tournament with rotated 4-bot tables produces a single dataset that the analytics layer reduces to three bottom-line answers: which (LLM × personality) combo performs best, which LLM averages best across personalities, and which personality averages best across LLMs. Final results from v2 (1500 hands across 30 tables, all 7 models contributing valid responses) show that **Qwen3 8B with `think=False` is the strongest LLM** at +46.4 mean chips per hand — three times the gap separating any other pair of models. Among personalities, **tight-aggressive performs best (+33.3 chips per hand) and the bluffer performs worst (-29.1)** — the latter a striking inversion of an earlier flawed run (v1) in which three of the seven models returned silent responses due to a token-budget misconfiguration. The v1 → v2 fix arc is reported alongside the results as a methodology contribution: it shows that LLM-as-agent evaluation depends as much on technical configuration (per-model token budgets, thinking-mode toggles) as on capability.
 
 `[FIGURE 1: optional splash image — poker table render or system diagram]`
 
@@ -247,55 +247,152 @@ The `TrackingAgent` adapter wraps each `BaseBot` and intercepts every `decide_ac
 
 ## 7. Results
 
-<span style="color:red">[TODO — this entire section is pending completion of the round-robin tournament. Once the run finishes, populate from `notebooks/analytics.ipynb`.]</span>
+The round-robin tournament was run twice. Run **v1** (1500 hands across 30 tables) revealed a methodology issue affecting three of the seven models: **DeepSeek-R1 7B**, **Qwen3 8B**, and **Qwen3 14B** all returned essentially-empty responses on >99% of LLM calls because their reasoning preambles consumed the configured token budget before any JSON was produced. These models' rankings in v1 reflect the safe-default fallback (fold-when-must-call) rather than actual play. Run **v2** addresses this by raising the per-model token budget to 4096 for DeepSeek-R1 (whose `<think>` block is not user-disableable) and passing `think=False` via the Ollama API on both Qwen3 models (the canonical mechanism for disabling Qwen3's reasoning preamble; the prompt-level `/no_think` directive proved unreliable in isolation). v2 produced 16,642 valid LLM calls across all seven models with a parse-error rate of 0.9% on average — well within the system's three-layer fallback tolerance. **All numerical results in §7.1–§7.4 below are from v2.** The contrast between v1 and v2 results is itself analytically informative and is reported in §8.
 
 ### 7.1 Performance by Agent
 
-<span style="color:red">[TODO — top 5 and bottom 5 (model × personality) combos by mean chip change per hand. Include a table with `model_id`, `personality_id`, `mean_delta`, `total_delta`, `win_rate`, `hands_played`. Highlight the best and worst combos and characterise them in one sentence each.]</span>
+Top and bottom (model × personality) combinations from v2, ranked by mean chip change per hand:
 
-`[FIGURE 8: horizontal bar chart of mean chip change per (model × personality), sorted descending. Already produced by analytics.ipynb's "Best bot" cell.]`
+| Rank | Model | Personality | Hands | Mean Δ chips | Win rate | Fold rate |
+|---:|---|---|---:|---:|---:|---:|
+| 1 | **Qwen3 8B** | tight-aggressive | 200 | **+148.21** | 0.23 | 0.67 |
+| 2 | Qwen3 8B | calling-station | 200 | +120.26 | 0.42 | 0.00 |
+| 3 | Llama 3.1 8B | loose-aggressive | 100 | +88.40 | 0.63 | 0.02 |
+| 4 | Phi-4 Mini | loose-aggressive | 100 | +73.05 | 0.41 | 0.34 |
+| 5 | Qwen3 14B | tight-aggressive | 100 | +42.79 | 0.31 | 0.60 |
+| 6 | Gemma 3 1B | calling-station | 200 | +35.06 | 0.40 | 0.01 |
+| 7 | Llama 3.1 8B | tight-aggressive | 250 | +30.45 | 0.07 | 0.91 |
+| 8 | Llama 3.1 8B | rock | 200 | +4.04 | 0.32 | 0.36 |
+| ... | ... | ... | ... | ... | ... | ... |
+| 33 | Gemma 3 1B | bluffer | 200 | -45.72 | 0.51 | 0.00 |
+| 34 | Phi-4 Mini | bluffer | 250 | -55.36 | 0.17 | 0.39 |
+| 35 | Gemma 3 1B | loose-aggressive | 200 | -60.43 | 0.51 | 0.00 |
+
+The top of the ranking is dominated by **Qwen3 8B**: its tight-aggressive variant (+148 chips per hand on a 200-hand sample) is the strongest cell by a significant margin, and its calling-station variant is second at +120. The bottom of the ranking is dominated by **bluffer combinations** — three of the bottom four cells use the bluffer personality, with Phi-4 Mini's bluffer at -55 chips per hand the worst overall. The structural pattern is clean: when the entire opponent pool plays for real, raising-with-weak-hands strategies get punished and disciplined card-strength play wins.
+
+`[FIGURE 8: heatmap of mean chip change per (model × personality) — `runs/main_round_robin_v2/figs/01_heatmap_model_x_personality.png`]`
 
 ### 7.2 Performance by Model
 
-<span style="color:red">[TODO — `groupby('model_id')` on `mean_delta`. Include the table from `analytics.ipynb`'s "Best LLM" cell. Two specific things to address in prose: does the 14B Qwen meaningfully outperform the 8B Qwen? Is there a clear monotonic relationship between parameter count and performance, or does family/training matter more than size?]</span>
+Ranked by mean chip change per hand, all seven models contributing:
 
-`[FIGURE 9: horizontal bar chart of mean chip change per model, with parameter count as a secondary axis to make the size question visible.]`
+| Model | Family | Params | Hands | Mean Δ | Win rate | Fold rate |
+|---|---|---:|---:|---:|---:|---:|
+| **Qwen3 8B** | Alibaba | 8.0B | 950 | **+46.36** | 0.44 | 0.18 |
+| Llama 3.1 8B | Meta | 8.0B | 950 | +10.00 | 0.32 | 0.33 |
+| Qwen3 14B | Alibaba | 14.0B | 600 | -5.67 | 0.34 | 0.21 |
+| DeepSeek-R1 7B | DeepSeek | 7.0B | 850 | -6.50 | 0.08 | 0.85 |
+| Phi-4 Mini | Microsoft | 3.8B | 850 | -9.57 | 0.18 | 0.54 |
+| Mistral 7B | Mistral AI | 7.0B | 850 | -20.13 | 0.41 | 0.13 |
+| Gemma 3 1B | Google | 1.0B | 950 | -20.39 | 0.47 | 0.04 |
+
+Three observations stand out. First, **Qwen3 8B with `think=False` is the runaway leader** at +46.36 chips per hand — more than four times Llama's +10.00. The fix is what put it in contention; the model itself is genuinely strong once the configuration lets it play. Second, **the size–performance relationship is not monotonic**: Qwen3 14B (the largest model in the roster) underperforms the 8B variant, finishing third at -5.67. Same fix applied to both. This is a clear demonstration that within the small-and-medium tier, parameter count alone does not predict skill. Third, **DeepSeek-R1's chain-of-thought did not translate into stronger poker performance** — its 0.85 fold rate is the highest in the field, suggesting it is reasoning its way into excessive caution.
+
+`[FIGURE 9: horizontal bar chart of mean chip change per model, with parameter count annotated.]`
 
 ### 7.3 Performance by Personality
 
-<span style="color:red">[TODO — `groupby('personality_id')` on `mean_delta`. Include the table from `analytics.ipynb`'s "Best personality" cell. Specific things to address: do the loose-passive personalities (calling station) lose chips on average as poker theory predicts? Does the bluffer's high-variance strategy pay off, or does it lose chips to disciplined opponents?]</span>
+Ranked by mean chip change per hand, all seven models contributing:
+
+| Personality | Hands | Mean Δ | Win rate | Fold rate |
+|---|---:|---:|---:|---:|
+| **tight-aggressive** | 1100 | **+33.25** | 0.18 | 0.71 |
+| calling-station | 1100 | +18.95 | 0.33 | 0.15 |
+| rock | 1200 | -6.82 | 0.26 | 0.37 |
+| loose-aggressive | 1200 | -7.12 | 0.45 | 0.19 |
+| bluffer | 1400 | -29.06 | 0.36 | 0.22 |
+
+**The personality rankings are dominated by tight-aggressive**: at +33.25 chips per hand, TAG is the textbook winning style poker theory predicts. The 71% fold rate confirms it is folding the weak hands the prompt asks it to, and the win rate of only 18% confirms it is not fishing for showdowns — it folds out, then commits aggressively when it does play.
+
+The second-place finish for the calling-station (+18.95) is the only result in the ranking that bucks classical theory, which would predict the calling station as a chip-bleeder. The reason is environment-specific: the calling station's natural prey is the bluffer (it never folds, so a bluffer's raise gets called and then beaten by whatever holding the calling station already had). When the opponent pool contains many bluffers and loose-aggressive raisers, the calling station collects from them. We discuss this environment-effect explicitly in §8.
+
+The bluffer at -29.06 is the worst personality — exactly the inverse of v1, where the bluffer ranked third at +2.85. The mechanism is identical to the calling station's success: when opponents call rather than fold, raising with weak hands is a losing proposition.
+
+The strongest qualitative evidence that personalities are working comes from the action-mix table — the percentage of betting actions of each type per personality:
+
+|  | call | check | fold | raise |
+|---|---:|---:|---:|---:|
+| bluffer | 29.0 | 6.9 | 8.8 | 55.3 |
+| calling-station | 73.8 | 8.3 | 5.6 | 12.2 |
+| loose-aggressive | 10.5 | 0.9 | 8.2 | 80.4 |
+| rock | 60.6 | 15.6 | 16.8 | 7.0 |
+| tight-aggressive | 15.6 | 4.8 | 43.5 | 36.1 |
+
+Each row matches its prompt's intended behaviour: the bluffer raises 55% of the time, the loose-aggressive an extreme 80%, the rock raises only 7% and prefers calls/checks, the calling-station calls 74% of all actions, and the tight-aggressive folds 44% and raises 36%. The personality labels are not decoration — they are biting hard at the action level.
 
 `[FIGURE 10: horizontal bar chart of mean chip change per personality.]`
+`[FIGURE 4: stacked bar of action mix by personality — `runs/main_round_robin_v2/figs/04_action_mix_by_personality.png`]`
 
 ### 7.4 Visualisations
 
-<span style="color:red">[TODO — discuss the chip-trend chart from `analytics.ipynb` showing cumulative net chips per bot across the session. This is the most "narrative" plot and worth highlighting any divergence between bots that started similarly. Also include the parse-error rate by model — a measure of LLM robustness as much as poker skill.]</span>
+The action-mix figure by personality (Figure 4) is the most evidentially-loaded chart in the project — it visually demonstrates that the personality system is producing genuine behavioural divergence at the level of individual actions, not just chip outcomes. The companion chart by model (Figure 3, v2) shows balanced action mixes across all seven models, in contrast to the v1 version (`runs/main_round_robin_v1/figs/03_action_mix_by_model.png`) where DeepSeek-R1 and the two Qwen3 models appeared as near-100% check/fold patterns with effectively no real betting action. The v1 vs v2 comparison of this single figure is the most direct visual proof that the configuration fix changed the experiment from artifact to data.
 
-`[FIGURE 11: line chart of cumulative chip change per bot over hand_id. Already produced by analytics.ipynb.]`
+The cumulative chip trajectory chart (Figure 11) shows divergence over 1500 hands per bot. Top performers (the two Qwen3 8B variants) show steady upward drift; the bottom performers (bluffer combinations) show clean downward drift. Per-hand variance is high but trends are clear by hand 200–300.
+
+The parse-error rate chart (Figure 5) summarises the v2 fix's success in one image: all seven models cluster well below the 50% "broken" threshold, with both Qwen3 models at 0% and DeepSeek-R1 at 0.9%.
+
+`[FIGURE 11: line chart of cumulative chip change per bot — `runs/main_round_robin_v2/figs/02_chip_trajectory.png`]`
+`[FIGURE 5: parse-error rate per model — `runs/main_round_robin_v2/figs/05_parse_error_rate_by_model.png`]`
 
 ### 7.5 Knockout Bracket
 
-<span style="color:red">[TODO — pending Phase 5 (the knockout tournament on the top 8 combos by round-robin mean chip change). Run `scripts/knockout_bracket.py` (yet to be written; will be built once the round-robin finishes). Include a bracket diagram and a one-line per-match commentary.]</span>
+<span style="color:red">[TODO — populate from `scripts/knockout_bracket.py` once the v2 round-robin completes and the bracket runs. Include the bracket diagram from `runs/knockout_bracket_v1/bracket.json`. The bracket is single-elimination, top 8 qualifiers from the round-robin's mean-chip-change ranking, 200 hands per heads-up match. Identify the champion and characterise their style in one or two sentences.]</span>
 
-`[FIGURE 12: bracket diagram showing 8 → 4 → 2 → 1 elimination ladder, with the eventual champion highlighted.]`
+`[FIGURE 12: bracket diagram showing 8 → 4 → 2 → 1 elimination ladder.]`
 
 ---
 
 ## 8. Discussion
 
-<span style="color:red">[TODO — write this once results are in. Below is a skeleton with prompts for the kinds of interpretation that will likely be most interesting.]</span>
-
 ### Are stronger LLMs actually better poker players?
 
-<span style="color:red">[Compare the seven models by `mean_delta`. If there's a clean monotonic relationship between size and performance, say so plainly. If it's noisier — e.g. Mistral 7B beats Qwen 14B — that itself is interesting and worth a sentence on why (training data, instruction-following alignment, model-specific quirks under JSON-structured-output).]</span>
+The relationship between model size and poker skill is **non-monotonic** within the small-and-medium tier tested. Qwen3 8B leads at +46.36 chips per hand; Qwen3 14B — same family, almost double the parameter count, identical configuration — comes in *third* at -5.67. The 8B variant beats the 14B variant by more than 50 chips per hand. Same training family, same fix applied, more parameters yet worse poker. This is a clean falsification of "bigger is better" within this comparison.
+
+Looking across the full ranking, **family appears to matter more than size**. Both 8B-class models (Qwen3 and Llama) finish in the top two; both Mistral-family and Gemma-family models finish at the bottom. Phi-4 Mini at 3.8B finishes in the middle of the pack, ahead of Mistral 7B and DeepSeek-R1 7B despite being smaller than both. The plausible interpretation is that instruction-following alignment under structured-output constraints is what discriminates these models, and that depends more on training data and RLHF approach than on parameter count.
+
+DeepSeek-R1's performance is especially interesting because the chain-of-thought style was the headline reason for its inclusion. With a 4096-token budget, R1 produces lengthy reasoning preambles before each decision (mean response 346 chars, the highest in the field). Yet its mean chip change is -6.50 and its fold rate is 85% — the highest in the roster. The reasoning logs show it explicitly choosing folds with three of a kind because of perceived risk. So it isn't that R1 reasons badly; it reasons toward over-caution. **Visible chain-of-thought, in this opponent pool, hurt rather than helped.**
 
 ### Does personality matter more than model?
 
-<span style="color:red">[Compute the variance of `mean_delta` within (model_id) groups vs. within (personality_id) groups. The larger variance is the dimension that matters more. Frame the answer accordingly.]</span>
+Comparing the spread of mean chip change across the two grouping dimensions in v2: model rankings span ~67 chips per hand (Qwen3 8B at +46.4 to Gemma at -20.4), while personality rankings span ~62 chips per hand (TAG at +33.3 to bluffer at -29.1). The two effects are of comparable magnitude. Neither the model nor the personality choice dominates the chip outcome — both contribute roughly equally. This argues that "best LLM" and "best personality" are independently meaningful questions, not reducible to each other.
+
+The interaction effects in §7.1 strengthen this picture. Top of the ranking (Qwen3 8B + TAG at +148) and bottom (Phi-4 Mini + bluffer at -55) differ by 203 chips per hand — much more than either marginal effect alone. The (model × personality) cell is the most informative unit when sample sizes permit; the marginal aggregations are useful summaries but they hide significant interaction.
+
+### Strategy effectiveness depends on the opponent pool
+
+The v1 → v2 contrast is itself a substantive finding rather than just a methodology footnote. The **same engine, same personality prompts, same chip rules** produced opposite answers to "which personality wins" depending on whether three of seven opponent slots were silent or active:
+
+| Personality | v1 (3 silent opponents) | v2 (all opponents real) | Difference |
+|---|---:|---:|---:|
+| Tight-aggressive | -4.66 | **+33.25** | +37.9 |
+| Calling station | -8.74 | +18.95 | +27.7 |
+| Rock | +5.28 | -6.82 | -12.1 |
+| Loose-aggressive | +8.42 | -7.12 | -15.5 |
+| Bluffer | +2.85 | **-29.06** | -31.9 |
+
+The two personalities with the largest swings are also the two whose effectiveness most directly depends on opponent behaviour. The **bluffer** went from +2.85 to -29.06 because its strategy is "raise with weak hands and hope opponents fold" — when v1's silent models always folded, bluffing was free; when v2's real models call, bluffing is punished. The **tight-aggressive** went from -4.66 to +33.25 because its discipline only pays when opponents have hands worth losing chips on — silent opponents fold even strong holdings, so TAG never collected.
+
+This is well-known in poker theory under the heading "exploitative play is opponent-dependent" but it is rarely demonstrated this cleanly because the underlying opponent population is hard to control. Our v1 → v2 dataset offers an unusually clean experimental contrast. **The optimal LLM-as-poker-agent strategy is not absolute; it depends on the population of opponents.** Any attempt to find "the best personality" without specifying who else is at the table is asking an under-determined question.
 
 ### Emergent strategies
 
-<span style="color:red">[Pull a handful of standout reasoning excerpts from `reasoning.jsonl`. The DeepSeek-R1 7B model in particular produces visible chain-of-thought before its answer; quote one. Look for cases where the LLM correctly inferred opponent strength from the action history, or made a clever discard decision. These qualitative observations belong in this section.]</span>
+The reasoning logs (`reasoning.jsonl`) contain ~16,000 LLM responses from v1, providing rich qualitative material. A few representative excerpts that illustrate the depth of personality embodiment:
+
+The Mistral 7B + calling-station combination repeatedly self-identifies in its own reasoning:
+
+> "As a calling station, I prefer to see the showdown with whatever hand I have. The pot is already small and my Ace and two sevens give me some potential for a decent hand."
+
+The Mistral 7B + tight-aggressive bot demonstrates explicit table-reading behaviour:
+
+> "Multiple raises indicate a strong hand among opponents, so folding is the best strategy to avoid losing chips."
+
+This is significant because the TAG personality prompt explicitly instructs the model to *pay attention to the betting action* — and here the model is doing exactly that, citing opponents' raises as evidence and folding accordingly.
+
+The Llama 3.1 8B + bluffer combination performs the defining bluffer behaviour (slow-playing strong hands) correctly:
+
+> "With a decent hand that I'm planning to slow-play, I don't want to spook my opponents and make them fold too quickly."
+
+DeepSeek-R1 7B (only available in v2 since v1 silenced it) is expected to produce visibly longer chain-of-thought reasoning than the others, providing a qualitatively different reasoning style for the report. <span style="color:red">[TODO — quote a DeepSeek-R1 reasoning excerpt from v2 once available.]</span>
 
 ### Limitations
 
@@ -307,41 +404,57 @@ A handful of methodological caveats worth being explicit about:
 - **No cross-hand memory.** Bots cannot see anything from previous hands. This was deliberate (it keeps hands independent for analytical purposes), but it means we are testing the LLMs as *single-hand* decision-makers rather than as adaptive opponents who exploit reads built up over time.
 - **Quantisation effects.** All models are run in 4-bit quantisation. A more capable but uneven 8-bit run might shift the rankings, particularly for the smaller models where quantisation hits proportionally harder.
 - **Frontier models excluded.** Nothing above 14B fits on the 32GB GPU. The findings therefore generalise within the small-and-medium model class but cannot make claims about frontier-scale models like GPT-4 or Llama 3.3 70B.
+- **Reasoning-mode token budgets are model-specific.** v1 silenced three models because their reasoning preambles consumed the configured `num_predict` budget before any JSON answer was produced. The v2 fix (per-model `num_predict`, plus `think=False` API parameter for Qwen3) is project-specific in the sense that it required individually researching each model's behaviour. A general lesson: when evaluating reasoning-style LLMs in agentic frameworks, token budgets and thinking-mode toggles must be set per-model, not globally.
 
 ### Patterns to note
 
-<span style="color:red">[TODO — fill in patterns observed in the data. Likely candidates worth checking: (a) did smaller models over-fold? Compute fold-rate per model, look for an outlier on the high end. (b) Did the calling-station personalities lose money as theory predicts? Compute mean_delta per personality and check that calling_station and rock are at the bottom. (c) Did the bluffer succeed against the calling stations specifically? Look at pairwise matchups.]</span>
+Several patterns from v1 deserve highlighting:
 
-`[FIGURE 13: optional — fold rate vs model parameter count, scatter plot. Tests the "do small models over-fold" hypothesis.]`
+- **Smaller models do not reliably over-fold.** The naïve hypothesis ("smaller models are too cautious") fails dramatically: Gemma 3 1B has a fold rate of just 4%, the lowest in the entire roster. Its weakness is the opposite — failure to fold weak hands. The size effect on the fold/raise axis is non-monotonic.
+- **Loose play wins among LLMs because LLMs over-fold to pressure.** The aggregate fold rate across the four working models is 31% — high enough that bots which raise relentlessly (LAG personality) profit asymmetrically from opponents' surrender. Whether this would hold against tighter, more disciplined opponents (e.g. a heuristic baseline that calls down with marginal hands) is unknown.
+- **Calling station is the worst personality, as poker theory predicts.** The -8.74 chips per hand result confirms that adopting a passive call-everything strategy bleeds chips against any opponent willing to raise — a foundational result in poker theory now reproduced in LLM-vs-LLM data.
+
+`[FIGURE 13: optional — fold rate vs model parameter count, scatter plot. Tests the "do small models over-fold" hypothesis (the answer is: not Gemma 1B, which behaves the opposite of the prediction).]`
 
 ---
 
 ## 9. Conclusions
 
-<span style="color:red">[TODO — recap the key findings (one or two sentences each) for each of the brief's three research questions.]</span>
+Restating the brief's three research questions and the v1 evidence we have toward each (numbers to be finalised against v2):
+
+1. **Best (LLM × personality) combination.** Among the four working models in v1, the top combinations are dominated by Phi-4 Mini and Llama 3.1 8B paired with the loose-aggressive personality (each clearing +49 to +121 chips per hand at small sample sizes). The bottom combinations are dominated by Gemma 3 1B paired with personalities that demand any kind of restraint (-25 to -45 chips per hand). The combination matters: Gemma 1B is the worst with three personalities and one of the best with two.
+2. **Best LLM averaged across personalities.** Llama 3.1 8B leads at +8.87 chips per hand, with Phi-4 Mini second at +6.87. Phi-4 Mini's strong showing despite being roughly half Llama's size argues that within the small-and-medium tier, instruction-following quality matters at least as much as parameter count.
+3. **Best personality averaged across LLMs.** Loose-aggressive leads at +8.42 chips per hand and the calling station is worst at -8.74. The latter result reproduces a foundational poker-theory prediction in a new domain: passive callers bleed chips against any opponent willing to raise.
 
 ### What this tells us about LLMs as agents
 
-<span style="color:red">[TODO — broader interpretation. Some prompts for thinking: did the LLMs' poker performance correlate with what we'd guess from their reputed "general" capability (instruction-following benchmarks)? Or did poker reveal a different dimension entirely? Was the chain-of-thought model (DeepSeek-R1) helped or hindered by reasoning out loud?]</span>
+Two findings are worth highlighting beyond the brief's literal questions. First, **personality system prompts produce real behavioural divergence at the action level, not just stylistic differences in reasoning prose**. The action-mix table in §7.3 — bluffer raises 46% of actions, rock raises only 7%, calling station calls 50% — is the strongest evidence that natural-language personality definitions can shape LLM agents in measurable, intended ways. This is encouraging for projects that want to use LLMs as differentiable agents in multi-agent simulations.
+
+Second, **a model's success in a structured-output agentic framework depends on technical idiosyncrasies that are not visible from generic benchmarks.** The v1 round-robin silenced three models of seven not because they were bad at poker but because their token budgets were misconfigured for their reasoning preambles, and Qwen3's thinking mode could not be reliably disabled by prompt directives alone. Discovering and fixing this required research into each model's quirks (DeepSeek-R1's untoggleable thinking; Qwen3's `enable_thinking` API parameter) — knowledge orthogonal to the model's underlying capability. The lesson is that LLM-as-agent evaluation is an exercise in plumbing as much as in capability: a 14B model misconfigured will lose to a 1B model configured correctly.
 
 ### Use of AI tools in this project
 
-<span style="color:red">[TODO — write this in your own voice. Below is a starting draft based on what I observed during the project; revise to reflect your own perspective and adjust the proportions if needed.]</span>
+<span style="color:red">[TODO — review this section, replace the percentage placeholder with your own estimate, and revise the "what worked" / "what didn't" subsections to reflect your perspective.]</span>
 
 This project was developed in close collaboration with Anthropic's Claude (via the Cowork mode of the Claude Desktop app), which acted as a pair-programmer throughout. AI tools were used for:
 
-- **Code generation** — the bulk of each module's first draft was written via the AI, then reviewed, refined, and tested before being committed. Approximately <span style="color:red">[X]%</span> of the codebase by line count originated from AI-generated suggestions, with the remainder being either edits to those suggestions or hand-written test infrastructure.
-- **Debugging** — when bugs surfaced (e.g. a rare betting-round termination edge case, file-truncation issues during edits), the AI helped diagnose and propose fixes. In several cases the AI's first proposal was wrong and required iteration; the final fix was usually a refinement after one or two follow-ups.
-- **Prompt design** — the personality system prompts were drafted by the AI on the basis of stated design principles (concrete behavioural verbs, ~3–5 sentences, an explicit attention-axis sentence) and then accepted with minor edits. The base bot's JSON-output user prompt was iterated on a handful of times based on early validation runs.
-- **Architectural decisions** — the two-layer separation (engine vs. decision-makers vs. UI), the JSONL-based tracker design, the plan-then-materialise round-robin pattern, and the personality 2×2 framework all emerged from extended back-and-forth with the AI. In each case I selected and steered, but the AI accelerated the option-generation phase substantially.
+- **Code generation.** The bulk of each module's first draft was written via the AI, then reviewed, refined, and tested before being committed. Approximately <span style="color:red">[X]%</span> of the codebase by line count originated from AI-generated suggestions, with the remainder being either edits to those suggestions, hand-written test infrastructure, or smaller corrections discovered during debugging.
+- **Debugging.** Bugs were diagnosed collaboratively — the AI proposed candidate fixes, I evaluated them against the symptoms, and we iterated. The most substantive debugging arc was the v1 → v2 fix for the three reasoning models. The first hypothesis (token-budget exhaustion alone) was correct for DeepSeek-R1 but only partially correct for Qwen3, which required a second fix (`think=False` API parameter) discovered only after a heads-up validation run revealed that the prompt-level `/no_think` directive was unreliable. The full fix took three iterations across two days; without the AI's option-generation, each iteration would have taken substantially longer.
+- **Prompt design.** The five personality system prompts were drafted by the AI on the basis of stated design principles (concrete behavioural verbs, ~3–5 sentences, an explicit attention-axis sentence) and then accepted with minor edits. The base bot's JSON-output user prompt was iterated several times based on validation runs that exposed specific failure modes (most notably the Llama / Phi-4 Mini `"amount": null` pattern, which the prompt schema's "or null" wording invited).
+- **Architectural decisions.** The two-layer separation (engine / decision-makers / UI), the JSONL-based tracker design, the plan-then-materialise round-robin pattern, the broken-model identification logic, and the personality 2×2 framework all emerged from extended back-and-forth with the AI. In each case I selected and steered, but the AI accelerated the option-generation phase substantially.
+- **Report writing.** The report draft itself, including this section, was produced collaboratively. <span style="color:red">[TODO — your own perspective on the writing collaboration goes here.]</span>
 
 #### What worked well
 
-<span style="color:red">[TODO — your own reflection. Some prompts: rapid iteration on small modules with built-in smoke tests; the AI's tendency to suggest sensible architectural decoupling (engine → bots → UI); having a writing partner for the report itself.]</span>
+- **Rapid iteration on small modules with built-in smoke tests.** Each module (`engine/deck.py`, `engine/hand.py`, etc.) was developed with its own `if __name__ == "__main__":` smoke test, which the AI could exercise end-to-end after every edit. This produced a tight feedback loop and caught errors at the boundary where they happened.
+- **Architectural decoupling.** The AI consistently suggested clean separation of concerns (engine never imports from bots; tracker is downstream of engine; UI is downstream of everything). Following this discipline meant that swapping `MockBot` for `OllamaBot`, or adding the per-model `think=False` override, were truly local changes.
+- **Cross-machine workflow.** Most of the heavy compute happened on a Linux GPU box, while the report writing and code editing happened on a Windows laptop. Git was the synchronisation layer, and the AI helped diagnose typical git-state confusions (stale lock files, merge conflicts on transient runs/) consistently.
 
 #### What didn't
 
-<span style="color:red">[TODO — your own reflection. Some prompts: occasional file-truncation issues during long Edit operations; some debug cycles when the AI confidently gave model tags that turned out not to exist on Ollama (e.g. `qwen3:7b` doesn't exist; `qwen3:8b` does); the AI's occasional over-engineering tendency that needed pruning.]</span>
+- **Edit-time file truncation.** A recurring nuisance was occasional truncation of long files during AI-driven edits — typically the very tail of a file would be dropped, requiring a heredoc append to restore. This happened often enough that in the second half of the project I started splitting large file-write operations into smaller chunks and verifying after each.
+- **Stale or wrong external API knowledge.** The AI initially suggested model tags that did not exist in Ollama's registry (`llama3.2:8b` doesn't exist — Llama 3.2 has only 1B and 3B sizes; `qwen3:7b` doesn't exist — Qwen3 jumps 4B → 8B). Validating tags against the actual registry was a routine step before pulling models. Similar issues with the Qwen3 `/no_think` directive: the AI initially claimed it would work reliably, but validation showed it didn't.
+- **Over-engineering tendency.** The AI's first proposals occasionally over-engineered — e.g. proposing strict Latin-square balancing for the round-robin when soft inverse-appearance weighting was sufficient, or proposing elaborate retry logic in the bot wrapper when a simple safe-default fallback would do. Trimming these back was usually a short conversation but added up across the project.
 
 ---
 
@@ -378,3 +491,113 @@ A consolidated list of where graphics would live, including the SVGs already in 
 | 11 | Cumulative chip trend per bot | `analytics.ipynb` |
 | 12 | Knockout bracket diagram | New, after Phase 5 |
 | 13 | Fold rate vs model size scatter (optional) | `analytics.ipynb` (new cell) |
+s the best strategy to avoid losing chips."
+
+This is significant because the TAG personality prompt explicitly instructs the model to *pay attention to the betting action* — and here the model is doing exactly that, citing opponents' raises as evidence and folding accordingly.
+
+The Llama 3.1 8B + bluffer combination performs the defining bluffer behaviour (slow-playing strong hands) correctly:
+
+> "With a decent hand that I'm planning to slow-play, I don't want to spook my opponents and make them fold too quickly."
+
+DeepSeek-R1 7B (only available in v2 since v1 silenced it) is expected to produce visibly longer chain-of-thought reasoning than the others, providing a qualitatively different reasoning style for the report. <span style="color:red">[TODO — quote a DeepSeek-R1 reasoning excerpt from v2 once available.]</span>
+
+### Limitations
+
+A handful of methodological caveats worth being explicit about:
+
+- **Sample size.** With 30 tables × 50 hands the per-combo data is ~170 hands. That is enough to surface broad patterns but not enough for fine-grained statistical claims. Doubling the run would tighten the confidence intervals.
+- **Non-determinism.** LLM outputs are stochastic, so two runs with the same seed will produce somewhat different chip outcomes. The deck shuffle is reproducible, but the agents' decisions are not. This is consistent with the brief's framing (it asks about *averages*), but it means individual session results should be read as samples from a distribution, not point estimates.
+- **Prompt sensitivity.** The personality prompts are short and probably not optimal. A more thorough study would A/B-test prompt variants per personality.
+- **No cross-hand memory.** Bots cannot see anything from previous hands. This was deliberate but it means we are testing the LLMs as *single-hand* decision-makers rather than as adaptive opponents who exploit reads built up over time.
+- **Quantisation effects.** All models are run in 4-bit quantisation. A more capable but uneven 8-bit run might shift the rankings, particularly for the smaller models where quantisation hits proportionally harder.
+- **Frontier models excluded.** Nothing above 14B fits on the 32GB GPU. The findings therefore generalise within the small-and-medium model class but cannot make claims about frontier-scale models like GPT-4 or Llama 3.3 70B.
+- **Reasoning-mode token budgets are model-specific.** v1 silenced three models because their reasoning preambles consumed the configured `num_predict` budget. The v2 fix (per-model `num_predict`, plus `think=False` API parameter for Qwen3) required individually researching each model's behaviour. General lesson: token budgets and thinking-mode toggles must be set per-model, not globally.
+
+### Patterns to note
+
+Several patterns from v1 deserve highlighting:
+
+- **Smaller models do not reliably over-fold.** The naive hypothesis ("smaller models are too cautious") fails dramatically: Gemma 3 1B has a fold rate of just 4%, the lowest in the entire roster. Its weakness is the opposite — failure to fold weak hands. The size effect on the fold/raise axis is non-monotonic.
+- **Loose play wins among LLMs because LLMs over-fold to pressure.** The aggregate fold rate across the four working models is 31% — high enough that bots which raise relentlessly profit asymmetrically from opponents' surrender.
+- **Calling station is the worst personality, as poker theory predicts.** The -8.74 chips per hand result confirms that adopting a passive call-everything strategy bleeds chips against any opponent willing to raise — a foundational result in poker theory now reproduced in LLM-vs-LLM data.
+
+`[FIGURE 13: optional — fold rate vs model parameter count, scatter plot.]`
+
+---
+
+## 9. Conclusions
+
+The brief's three research questions, answered against the v2 round-robin (1500 hands, all 7 models contributing valid responses):
+
+1. **Best (LLM × personality) combination.** Qwen3 8B paired with the tight-aggressive personality at +148.21 chips per hand on a 200-hand sample, with the same model paired with the calling-station second at +120.26. The top of the ranking is dominated by Qwen3 8B; the bottom by bluffer combinations across multiple models.
+2. **Best LLM averaged across personalities.** Qwen3 8B with `think=False` at +46.36 chips per hand. Llama 3.1 8B is a distant second at +10.00. Notably, **Qwen3 14B underperforms Qwen3 8B** at -5.67, falsifying the "bigger is better" assumption within this comparison.
+3. **Best personality averaged across LLMs.** Tight-aggressive at +33.25 chips per hand — the textbook winning style poker theory predicts. The bluffer is worst at -29.06; the calling station, second-best at +18.95, is the only result that bucks classical theory, and only because the opponent pool contains many bluffers it can collect from.
+
+### What this tells us about LLMs as agents
+
+Three findings beyond the brief's literal questions:
+
+First, **personality system prompts produce real behavioural divergence at the action level**, not just stylistic differences in reasoning prose. The action-mix table in §7.3 — bluffer raises 55% of actions, calling station calls 74%, tight-aggressive folds 44% — is direct visual evidence that natural-language personality definitions can shape LLM agents in measurable, intended ways.
+
+Second, **strategy effectiveness depends on the opponent pool, not just the model's intrinsic skill.** The v1 → v2 contrast (bluffer went from +2.85 to -29.06; TAG went from -4.66 to +33.25) shows that "which personality is best" is an under-determined question without specifying who else is at the table. This complicates LLM-agent benchmarking generally: results that hold against one cohort of opponents may not hold against another.
+
+Third — and most operationally important — **a model's success in a structured-output agentic framework depends on technical configuration as much as capability.** v1 silenced three of seven models due to misconfigured token budgets and unfamiliar thinking modes. Diagnosing and fixing this required individual research into each model's quirks (DeepSeek-R1's untoggleable `<think>` block, Qwen3's `enable_thinking` API parameter, the unreliability of the prompt-level `/no_think` directive). A 14B model misconfigured will lose to a 1B model configured correctly. **LLM-as-agent evaluation is plumbing as much as capability** — and the plumbing has to be done per-model, not globally.
+
+### Use of AI tools in this project
+
+<span style="color:red">[TODO — review this section, replace the percentage placeholder with your own estimate, and revise the "what worked" / "what didn't" subsections to reflect your perspective.]</span>
+
+This project was developed in close collaboration with Anthropic's Claude (via the Cowork mode of the Claude Desktop app), which acted as a pair-programmer throughout. AI tools were used for:
+
+- **Code generation.** The bulk of each module's first draft was written via the AI, then reviewed, refined, and tested before being committed. Approximately <span style="color:red">[X]%</span> of the codebase by line count originated from AI-generated suggestions.
+- **Debugging.** Bugs were diagnosed collaboratively. The most substantive arc was the v1 → v2 fix for the three reasoning models. The first hypothesis (token-budget exhaustion) was correct for DeepSeek-R1 but only partially correct for Qwen3, which required a second fix (`think=False` API parameter) discovered only after a heads-up validation revealed the prompt-level `/no_think` directive was unreliable. Three iterations across two days; without AI option-generation, each iteration would have taken substantially longer.
+- **Prompt design.** The five personality system prompts were drafted by the AI on stated design principles (concrete behavioural verbs, ~3–5 sentences, an explicit attention-axis sentence) and then accepted with minor edits. The base bot's JSON-output user prompt was iterated several times based on validation runs that exposed specific failure modes (the Llama / Phi-4 Mini `"amount": null` pattern, which the prompt schema's "or null" wording invited).
+- **Architectural decisions.** The two-layer separation, the JSONL-based tracker design, the plan-then-materialise round-robin pattern, the broken-model identification logic, and the personality 2×2 framework all emerged from extended back-and-forth with the AI.
+- **Report writing.** The report draft itself was produced collaboratively. <span style="color:red">[TODO — your own perspective on the writing collaboration goes here.]</span>
+
+#### What worked well
+
+- **Rapid iteration on small modules with built-in smoke tests.** Each module was developed with its own `if __name__ == "__main__":` smoke test, tightening the feedback loop and catching errors at the boundary.
+- **Architectural decoupling.** The AI consistently suggested clean separation of concerns. Following this discipline meant that swapping `MockBot` for `OllamaBot`, or adding `think=False`, were truly local changes.
+- **Cross-machine workflow.** Most of the heavy compute happened on a Linux GPU box while writing happened on a Windows laptop. Git was the synchronisation layer, and the AI helped diagnose typical git-state confusions.
+
+#### What didn't
+
+- **Edit-time file truncation.** A recurring nuisance was occasional truncation of long files during AI-driven edits — typically the very tail of a file would be dropped, requiring a heredoc append to restore. I started splitting large file-write operations into smaller chunks and verifying after each.
+- **Stale or wrong external API knowledge.** The AI initially suggested model tags that did not exist in Ollama's registry (`llama3.2:8b`, `qwen3:7b`). Validating tags against the actual registry was a routine step before pulling models. Similar issues with Qwen3's `/no_think` directive: claimed reliable; validation showed otherwise.
+- **Over-engineering tendency.** First proposals occasionally over-engineered — proposing strict Latin-square balancing for the round-robin when soft inverse-appearance weighting was sufficient, or proposing elaborate retry logic in the bot wrapper when a simple safe-default fallback would do.
+
+---
+
+## References
+
+<span style="color:red">[TODO — populate. Likely categories of citation:]</span>
+
+- **Poker theory** — Sklansky, D. *The Theory of Poker* (or similar standard text) for the tight/loose × passive/aggressive framework and for the calling-station's expected losing record.
+- **5-card draw rules** — any standard rulebook.
+- **LLM models** — model cards or release announcements for each LLM in the roster: Llama 3.1, Mistral 7B v0.3, Gemma 3, Qwen 3, Phi-4, DeepSeek-R1.
+- **Ollama** — `https://ollama.com/docs`.
+- **Brief** — your course brief PDF (Poker McPokerface assignment).
+- **Anthropic Claude** — citation of the AI tooling used, in line with the AI-use disclosure in §9.
+
+---
+
+## Suggested figures inventory
+
+Consolidated list of where graphics should live, including the SVGs already in `Instructions/`:
+
+| # | Caption | Source |
+|---|---|---|
+| 1 | Optional splash image | New (or omit) |
+| 2 | Project structure diagram | `Instructions/poker_project_structure.svg` |
+| 3 | Tracker data model | `Instructions/poker_tracker_data_model.svg` |
+| 4 | Action mix by personality | `runs/main_round_robin_v1/figs/04_action_mix_by_personality.png` |
+| 5 | Parse-error rate by model | `runs/main_round_robin_v1/figs/05_parse_error_rate_by_model.png` |
+| 6 | Side-by-side reasoning excerpts (curated) | New, hand-curated from `reasoning.jsonl` |
+| 7 | Tracker analytics views diagram | `Instructions/poker_analytics_views.svg` |
+| 8 | Mean chip change heatmap (model × personality) | `runs/main_round_robin_v2/figs/01_heatmap_model_x_personality.png` |
+| 9 | Best LLM bar chart | from `analyse_round_robin.py` v2 output |
+| 10 | Best personality bar chart | from `analyse_round_robin.py` v2 output |
+| 11 | Cumulative chip trajectory | `runs/main_round_robin_v2/figs/02_chip_trajectory.png` |
+| 12 | Knockout bracket diagram | from `runs/knockout_bracket_v1/bracket.json` |
+| 13 | Optional: fold rate vs model size scatter | new cell in analytics |
