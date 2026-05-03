@@ -1,0 +1,327 @@
+Roster: 35 bot plans (7 models × 5 personalities)
+=== Round-robin schedule ===
+  Session id      : main_round_robin_v2
+  Tables          : 30
+  Hands per table : 50
+  Total hands     : 1500
+  Seed            : 42
+  Estimated time  : 10.4 h (at ~25s/hand)
+
+=== Per-bot appearance counts ===
+  range: 2..5 appearances per bot
+  deepseek-r1-7b-loose_aggressive  5
+  llama31-8b-tight_aggressive   5
+  mistral-loose_aggressive      5
+  phi4-mini-bluffer             5
+  deepseek-r1-7b-bluffer        4
+  gemma3-1b-bluffer             4
+  gemma3-1b-calling_station     4
+  gemma3-1b-loose_aggressive    4
+  gemma3-1b-rock                4
+  llama31-8b-bluffer            4
+  llama31-8b-calling_station    4
+  llama31-8b-rock               4
+  mistral-bluffer               4
+  mistral-rock                  4
+  phi4-mini-rock                4
+  qwen3-8b-bluffer              4
+  qwen3-8b-calling_station      4
+  qwen3-8b-rock                 4
+  qwen3-8b-tight_aggressive     4
+  deepseek-r1-7b-calling_station  3
+  deepseek-r1-7b-tight_aggressive  3
+  gemma3-1b-tight_aggressive    3
+  phi4-mini-calling_station     3
+  phi4-mini-tight_aggressive    3
+  qwen3-14b-bluffer             3
+  qwen3-14b-loose_aggressive    3
+  qwen3-8b-loose_aggressive     3
+  deepseek-r1-7b-rock           2
+  llama31-8b-loose_aggressive   2
+  mistral-calling_station       2
+  mistral-tight_aggressive      2
+  phi4-mini-loose_aggressive    2
+  qwen3-14b-calling_station     2
+  qwen3-14b-rock                2
+  qwen3-14b-tight_aggressive    2
+
+=== Tables (sorted by model membership) ===
+  T 1: models=['deepseek-r1:7b', 'gemma3:1b']
+       seats=[gemma3-1b-loose_aggressive, gemma3-1b-rock, deepseek-r1-7b-loose_aggressive, gemma3-1b-calling_station]
+  T 2: models=['deepseek-r1:7b', 'gemma3:1b', 'llama3.1:8b']
+       seats=[gemma3-1b-rock, deepseek-r1-7b-calling_station, deepseek-r1-7b-bluffer, llama31-8b-rock]
+  T 3: models=['deepseek-r1:7b', 'gemma3:1b', 'llama3.1:8b', 'phi4-mini']
+       seats=[gemma3-1b-rock, phi4-mini-calling_station, llama31-8b-loose_aggressive, deepseek-r1-7b-loose_aggressive]
+  T 4: models=['deepseek-r1:7b', 'gemma3:1b', 'llama3.1:8b', 'qwen3:14b']
+       seats=[deepseek-r1-7b-bluffer, qwen3-14b-bluffer, gemma3-1b-bluffer, llama31-8b-calling_station]
+  T 5: models=['deepseek-r1:7b', 'gemma3:1b', 'mistral']
+       seats=[gemma3-1b-tight_aggressive, mistral-bluffer, deepseek-r1-7b-bluffer, mistral-rock]
+  T 6: models=['deepseek-r1:7b', 'gemma3:1b', 'mistral', 'phi4-mini']
+       seats=[phi4-mini-rock, deepseek-r1-7b-bluffer, mistral-bluffer, gemma3-1b-bluffer]
+  T 7: models=['deepseek-r1:7b', 'gemma3:1b', 'phi4-mini']
+       seats=[deepseek-r1-7b-rock, phi4-mini-tight_aggressive, deepseek-r1-7b-calling_station, gemma3-1b-tight_aggressive]
+  T 8: models=['deepseek-r1:7b', 'gemma3:1b', 'qwen3:8b']
+       seats=[gemma3-1b-rock, qwen3-8b-calling_station, deepseek-r1-7b-loose_aggressive, qwen3-8b-bluffer]
+  T 9: models=['deepseek-r1:7b', 'llama3.1:8b', 'mistral']
+       seats=[deepseek-r1-7b-rock, llama31-8b-tight_aggressive, mistral-bluffer, llama31-8b-bluffer]
+  T10: models=['deepseek-r1:7b', 'llama3.1:8b', 'mistral', 'qwen3:8b']
+       seats=[qwen3-8b-loose_aggressive, mistral-calling_station, llama31-8b-tight_aggressive, deepseek-r1-7b-calling_station]
+  T11: models=['deepseek-r1:7b', 'llama3.1:8b', 'phi4-mini', 'qwen3:14b']
+       seats=[llama31-8b-rock, qwen3-14b-calling_station, deepseek-r1-7b-tight_aggressive, phi4-mini-tight_aggressive]
+  T12: models=['deepseek-r1:7b', 'llama3.1:8b', 'qwen3:8b']
+       seats=[llama31-8b-calling_station, qwen3-8b-calling_station, deepseek-r1-7b-tight_aggressive, llama31-8b-loose_aggressive]
+  T13: models=['deepseek-r1:7b', 'mistral']
+       seats=[deepseek-r1-7b-tight_aggressive, mistral-loose_aggressive, deepseek-r1-7b-loose_aggressive, mistral-tight_aggressive]
+  T14: models=['deepseek-r1:7b', 'phi4-mini', 'qwen3:8b']
+       seats=[qwen3-8b-bluffer, phi4-mini-bluffer, qwen3-8b-tight_aggressive, deepseek-r1-7b-loose_aggressive]
+  T15: models=['gemma3:1b', 'llama3.1:8b', 'phi4-mini', 'qwen3:8b']
+       seats=[gemma3-1b-tight_aggressive, phi4-mini-calling_station, llama31-8b-tight_aggressive, qwen3-8b-rock]
+  T16: models=['gemma3:1b', 'mistral', 'phi4-mini', 'qwen3:14b']
+       seats=[qwen3-14b-tight_aggressive, gemma3-1b-calling_station, phi4-mini-loose_aggressive, mistral-loose_aggressive]
+  T17: models=['gemma3:1b', 'mistral', 'phi4-mini', 'qwen3:8b']
+       seats=[mistral-rock, qwen3-8b-tight_aggressive, gemma3-1b-bluffer, phi4-mini-bluffer]
+  T18: models=['gemma3:1b', 'mistral', 'qwen3:14b']
+       seats=[qwen3-14b-calling_station, mistral-rock, gemma3-1b-calling_station, qwen3-14b-loose_aggressive]
+  T19: models=['gemma3:1b', 'phi4-mini', 'qwen3:8b']
+       seats=[gemma3-1b-loose_aggressive, phi4-mini-bluffer, gemma3-1b-bluffer, qwen3-8b-tight_aggressive]
+  T20: models=['gemma3:1b', 'phi4-mini', 'qwen3:8b']
+       seats=[gemma3-1b-loose_aggressive, gemma3-1b-calling_station, phi4-mini-loose_aggressive, qwen3-8b-bluffer]
+  T21: models=['gemma3:1b', 'qwen3:14b', 'qwen3:8b']
+       seats=[qwen3-8b-bluffer, qwen3-8b-calling_station, gemma3-1b-loose_aggressive, qwen3-14b-loose_aggressive]
+  T22: models=['llama3.1:8b', 'mistral', 'phi4-mini', 'qwen3:14b']
+       seats=[llama31-8b-calling_station, phi4-mini-rock, mistral-loose_aggressive, qwen3-14b-rock]
+  T23: models=['llama3.1:8b', 'mistral', 'phi4-mini', 'qwen3:14b']
+       seats=[phi4-mini-bluffer, qwen3-14b-rock, mistral-loose_aggressive, llama31-8b-tight_aggressive]
+  T24: models=['llama3.1:8b', 'mistral', 'qwen3:14b', 'qwen3:8b']
+       seats=[qwen3-14b-bluffer, mistral-bluffer, llama31-8b-bluffer, qwen3-8b-calling_station]
+  T25: models=['llama3.1:8b', 'phi4-mini']
+       seats=[phi4-mini-bluffer, llama31-8b-calling_station, llama31-8b-rock, llama31-8b-bluffer]
+  T26: models=['llama3.1:8b', 'phi4-mini', 'qwen3:8b']
+       seats=[phi4-mini-calling_station, qwen3-8b-rock, phi4-mini-rock, llama31-8b-rock]
+  T27: models=['llama3.1:8b', 'qwen3:14b', 'qwen3:8b']
+       seats=[qwen3-14b-bluffer, qwen3-8b-tight_aggressive, qwen3-8b-loose_aggressive, llama31-8b-bluffer]
+  T28: models=['llama3.1:8b', 'qwen3:14b', 'qwen3:8b']
+       seats=[qwen3-8b-rock, qwen3-14b-loose_aggressive, qwen3-8b-loose_aggressive, llama31-8b-tight_aggressive]
+  T29: models=['mistral', 'phi4-mini', 'qwen3:14b']
+       seats=[phi4-mini-tight_aggressive, mistral-calling_station, mistral-loose_aggressive, qwen3-14b-tight_aggressive]
+  T30: models=['mistral', 'phi4-mini', 'qwen3:8b']
+       seats=[qwen3-8b-rock, phi4-mini-rock, mistral-rock, mistral-tight_aggressive]
+
+=== Starting tournament — writing to /home/geeko/projects/adam/PokerAI/runs/main_round_robin_v2 ===
+
+
+--- Table 1/30 ---
+    gemma3-1b-loose_aggressive
+    gemma3-1b-rock
+    deepseek-r1-7b-loose_aggressive
+    gemma3-1b-calling_station
+    Done in 2248s (45.0s/hand). ETA remaining: 18.1h
+
+--- Table 2/30 ---
+    gemma3-1b-rock
+    deepseek-r1-7b-calling_station
+    deepseek-r1-7b-bluffer
+    llama31-8b-rock
+    Done in 4778s (95.6s/hand). ETA remaining: 27.3h
+
+--- Table 3/30 ---
+    gemma3-1b-rock
+    phi4-mini-calling_station
+    llama31-8b-loose_aggressive
+    deepseek-r1-7b-loose_aggressive
+    Done in 2732s (54.6s/hand). ETA remaining: 24.4h
+
+--- Table 4/30 ---
+    deepseek-r1-7b-bluffer
+    qwen3-14b-bluffer
+    gemma3-1b-bluffer
+    llama31-8b-calling_station
+    Done in 3378s (67.6s/hand). ETA remaining: 23.7h
+
+--- Table 5/30 ---
+    gemma3-1b-tight_aggressive
+    mistral-bluffer
+    deepseek-r1-7b-bluffer
+    mistral-rock
+    Done in 3166s (63.3s/hand). ETA remaining: 22.6h
+
+--- Table 6/30 ---
+    phi4-mini-rock
+    deepseek-r1-7b-bluffer
+    mistral-bluffer
+    gemma3-1b-bluffer
+    Done in 3057s (61.1s/hand). ETA remaining: 21.5h
+
+--- Table 7/30 ---
+    deepseek-r1-7b-rock
+    phi4-mini-tight_aggressive
+    deepseek-r1-7b-calling_station
+    gemma3-1b-tight_aggressive
+    Done in 2762s (55.2s/hand). ETA remaining: 20.2h
+
+--- Table 8/30 ---
+    gemma3-1b-rock
+    qwen3-8b-calling_station
+    deepseek-r1-7b-loose_aggressive
+    qwen3-8b-bluffer
+    Done in 3471s (69.4s/hand). ETA remaining: 19.5h
+
+--- Table 9/30 ---
+    deepseek-r1-7b-rock
+    llama31-8b-tight_aggressive
+    mistral-bluffer
+    llama31-8b-bluffer
+    Done in 2137s (42.7s/hand). ETA remaining: 18.0h
+
+--- Table 10/30 ---
+    qwen3-8b-loose_aggressive
+    mistral-calling_station
+    llama31-8b-tight_aggressive
+    deepseek-r1-7b-calling_station
+    Done in 2873s (57.5s/hand). ETA remaining: 17.0h
+
+--- Table 11/30 ---
+    llama31-8b-rock
+    qwen3-14b-calling_station
+    deepseek-r1-7b-tight_aggressive
+    phi4-mini-tight_aggressive
+    Done in 3217s (64.3s/hand). ETA remaining: 16.2h
+
+--- Table 12/30 ---
+    llama31-8b-calling_station
+    qwen3-8b-calling_station
+    deepseek-r1-7b-tight_aggressive
+    llama31-8b-loose_aggressive
+    Done in 2451s (49.0s/hand). ETA remaining: 15.1h
+
+--- Table 13/30 ---
+    deepseek-r1-7b-tight_aggressive
+    mistral-loose_aggressive
+    deepseek-r1-7b-loose_aggressive
+    mistral-tight_aggressive
+    Done in 3975s (79.5s/hand). ETA remaining: 14.6h
+
+--- Table 14/30 ---
+    qwen3-8b-bluffer
+    phi4-mini-bluffer
+    qwen3-8b-tight_aggressive
+    deepseek-r1-7b-loose_aggressive
+    Done in 2822s (56.4s/hand). ETA remaining: 13.7h
+
+--- Table 15/30 ---
+    gemma3-1b-tight_aggressive
+    phi4-mini-calling_station
+    llama31-8b-tight_aggressive
+    qwen3-8b-rock
+    Done in 1255s (25.1s/hand). ETA remaining: 12.3h
+
+--- Table 16/30 ---
+    qwen3-14b-tight_aggressive
+    gemma3-1b-calling_station
+    phi4-mini-loose_aggressive
+    mistral-loose_aggressive
+    Done in 2210s (44.2s/hand). ETA remaining: 11.3h
+
+--- Table 17/30 ---
+    mistral-rock
+    qwen3-8b-tight_aggressive
+    gemma3-1b-bluffer
+    phi4-mini-bluffer
+    Done in 1443s (28.9s/hand). ETA remaining: 10.2h
+
+--- Table 18/30 ---
+    qwen3-14b-calling_station
+    mistral-rock
+    gemma3-1b-calling_station
+    qwen3-14b-loose_aggressive
+    Done in 2851s (57.0s/hand). ETA remaining: 9.4h
+
+--- Table 19/30 ---
+    gemma3-1b-loose_aggressive
+    phi4-mini-bluffer
+    gemma3-1b-bluffer
+    qwen3-8b-tight_aggressive
+    Done in 1446s (28.9s/hand). ETA remaining: 8.4h
+
+--- Table 20/30 ---
+    gemma3-1b-loose_aggressive
+    gemma3-1b-calling_station
+    phi4-mini-loose_aggressive
+    qwen3-8b-bluffer
+    Done in 1332s (26.6s/hand). ETA remaining: 7.4h
+
+--- Table 21/30 ---
+    qwen3-8b-bluffer
+    qwen3-8b-calling_station
+    gemma3-1b-loose_aggressive
+    qwen3-14b-loose_aggressive
+    Done in 1522s (30.4s/hand). ETA remaining: 6.6h
+
+--- Table 22/30 ---
+    llama31-8b-calling_station
+    phi4-mini-rock
+    mistral-loose_aggressive
+    qwen3-14b-rock
+    Done in 2286s (45.7s/hand). ETA remaining: 5.8h
+
+--- Table 23/30 ---
+    phi4-mini-bluffer
+    qwen3-14b-rock
+    mistral-loose_aggressive
+    llama31-8b-tight_aggressive
+    Done in 2483s (49.7s/hand). ETA remaining: 5.1h
+
+--- Table 24/30 ---
+    qwen3-14b-bluffer
+    mistral-bluffer
+    llama31-8b-bluffer
+    qwen3-8b-calling_station
+    Done in 2817s (56.3s/hand). ETA remaining: 4.4h
+
+--- Table 25/30 ---
+    phi4-mini-bluffer
+    llama31-8b-calling_station
+    llama31-8b-rock
+    llama31-8b-bluffer
+    Done in 1300s (26.0s/hand). ETA remaining: 3.6h
+
+--- Table 26/30 ---
+    phi4-mini-calling_station
+    qwen3-8b-rock
+    phi4-mini-rock
+    llama31-8b-rock
+    Done in 1251s (25.0s/hand). ETA remaining: 2.8h
+
+--- Table 27/30 ---
+    qwen3-14b-bluffer
+    qwen3-8b-tight_aggressive
+    qwen3-8b-loose_aggressive
+    llama31-8b-bluffer
+    Done in 1600s (32.0s/hand). ETA remaining: 2.1h
+
+--- Table 28/30 ---
+    qwen3-8b-rock
+    qwen3-14b-loose_aggressive
+    qwen3-8b-loose_aggressive
+    llama31-8b-tight_aggressive
+    Done in 1303s (26.1s/hand). ETA remaining: 1.4h
+
+--- Table 29/30 ---
+    phi4-mini-tight_aggressive
+    mistral-calling_station
+    mistral-loose_aggressive
+    qwen3-14b-tight_aggressive
+    Done in 1760s (35.2s/hand). ETA remaining: 0.7h
+
+--- Table 30/30 ---
+    qwen3-8b-rock
+    phi4-mini-rock
+    mistral-rock
+    mistral-tight_aggressive
+    Done in 1209s (24.2s/hand). ETA remaining: 0.0h
+
+=== Tournament complete ===
+  Wall-clock: 19.76h (71137s)
+  Tables    : 30
+  Total hands: 1500
+  Output     : /home/geeko/projects/adam/PokerAI/runs/main_round_robin_v2

@@ -1,0 +1,262 @@
+{
+  "session_id": "main_round_robin_v2",
+  "started_at": "2026-05-02T23:38:28",
+  "ended_at": "2026-05-03T19:24:06",
+  "seats": [
+    {
+      "name": "gemma3-1b-tight_aggressive",
+      "model_id": "gemma3:1b",
+      "personality_id": "tight_aggressive",
+      "personality_description": "Folds weak hands; raises strong ones. The textbook winning style.",
+      "starting_chips": 200
+    },
+    {
+      "name": "gemma3-1b-loose_aggressive",
+      "model_id": "gemma3:1b",
+      "personality_id": "loose_aggressive",
+      "personality_description": "Plays many hands aggressively; raises and bluffs constantly.",
+      "starting_chips": 200
+    },
+    {
+      "name": "gemma3-1b-rock",
+      "model_id": "gemma3:1b",
+      "personality_id": "rock",
+      "personality_description": "Tight-passive. Plays only premium hands; never raises, never bluffs.",
+      "starting_chips": 200
+    },
+    {
+      "name": "gemma3-1b-calling_station",
+      "model_id": "gemma3:1b",
+      "personality_id": "calling_station",
+      "personality_description": "Loose-passive. Calls everything; rarely raises. Hard to bluff.",
+      "starting_chips": 200
+    },
+    {
+      "name": "gemma3-1b-bluffer",
+      "model_id": "gemma3:1b",
+      "personality_id": "bluffer",
+      "personality_description": "Bluffs with weak hands, slow-plays strong ones. Highly deceptive.",
+      "starting_chips": 200
+    },
+    {
+      "name": "phi4-mini-tight_aggressive",
+      "model_id": "phi4-mini",
+      "personality_id": "tight_aggressive",
+      "personality_description": "Folds weak hands; raises strong ones. The textbook winning style.",
+      "starting_chips": 200
+    },
+    {
+      "name": "phi4-mini-loose_aggressive",
+      "model_id": "phi4-mini",
+      "personality_id": "loose_aggressive",
+      "personality_description": "Plays many hands aggressively; raises and bluffs constantly.",
+      "starting_chips": 200
+    },
+    {
+      "name": "phi4-mini-rock",
+      "model_id": "phi4-mini",
+      "personality_id": "rock",
+      "personality_description": "Tight-passive. Plays only premium hands; never raises, never bluffs.",
+      "starting_chips": 200
+    },
+    {
+      "name": "phi4-mini-calling_station",
+      "model_id": "phi4-mini",
+      "personality_id": "calling_station",
+      "personality_description": "Loose-passive. Calls everything; rarely raises. Hard to bluff.",
+      "starting_chips": 200
+    },
+    {
+      "name": "phi4-mini-bluffer",
+      "model_id": "phi4-mini",
+      "personality_id": "bluffer",
+      "personality_description": "Bluffs with weak hands, slow-plays strong ones. Highly deceptive.",
+      "starting_chips": 200
+    },
+    {
+      "name": "llama31-8b-tight_aggressive",
+      "model_id": "llama3.1:8b",
+      "personality_id": "tight_aggressive",
+      "personality_description": "Folds weak hands; raises strong ones. The textbook winning style.",
+      "starting_chips": 200
+    },
+    {
+      "name": "llama31-8b-loose_aggressive",
+      "model_id": "llama3.1:8b",
+      "personality_id": "loose_aggressive",
+      "personality_description": "Plays many hands aggressively; raises and bluffs constantly.",
+      "starting_chips": 200
+    },
+    {
+      "name": "llama31-8b-rock",
+      "model_id": "llama3.1:8b",
+      "personality_id": "rock",
+      "personality_description": "Tight-passive. Plays only premium hands; never raises, never bluffs.",
+      "starting_chips": 200
+    },
+    {
+      "name": "llama31-8b-calling_station",
+      "model_id": "llama3.1:8b",
+      "personality_id": "calling_station",
+      "personality_description": "Loose-passive. Calls everything; rarely raises. Hard to bluff.",
+      "starting_chips": 200
+    },
+    {
+      "name": "llama31-8b-bluffer",
+      "model_id": "llama3.1:8b",
+      "personality_id": "bluffer",
+      "personality_description": "Bluffs with weak hands, slow-plays strong ones. Highly deceptive.",
+      "starting_chips": 200
+    },
+    {
+      "name": "mistral-tight_aggressive",
+      "model_id": "mistral",
+      "personality_id": "tight_aggressive",
+      "personality_description": "Folds weak hands; raises strong ones. The textbook winning style.",
+      "starting_chips": 200
+    },
+    {
+      "name": "mistral-loose_aggressive",
+      "model_id": "mistral",
+      "personality_id": "loose_aggressive",
+      "personality_description": "Plays many hands aggressively; raises and bluffs constantly.",
+      "starting_chips": 200
+    },
+    {
+      "name": "mistral-rock",
+      "model_id": "mistral",
+      "personality_id": "rock",
+      "personality_description": "Tight-passive. Plays only premium hands; never raises, never bluffs.",
+      "starting_chips": 200
+    },
+    {
+      "name": "mistral-calling_station",
+      "model_id": "mistral",
+      "personality_id": "calling_station",
+      "personality_description": "Loose-passive. Calls everything; rarely raises. Hard to bluff.",
+      "starting_chips": 200
+    },
+    {
+      "name": "mistral-bluffer",
+      "model_id": "mistral",
+      "personality_id": "bluffer",
+      "personality_description": "Bluffs with weak hands, slow-plays strong ones. Highly deceptive.",
+      "starting_chips": 200
+    },
+    {
+      "name": "qwen3-8b-tight_aggressive",
+      "model_id": "qwen3:8b",
+      "personality_id": "tight_aggressive",
+      "personality_description": "Folds weak hands; raises strong ones. The textbook winning style.",
+      "starting_chips": 200
+    },
+    {
+      "name": "qwen3-8b-loose_aggressive",
+      "model_id": "qwen3:8b",
+      "personality_id": "loose_aggressive",
+      "personality_description": "Plays many hands aggressively; raises and bluffs constantly.",
+      "starting_chips": 200
+    },
+    {
+      "name": "qwen3-8b-rock",
+      "model_id": "qwen3:8b",
+      "personality_id": "rock",
+      "personality_description": "Tight-passive. Plays only premium hands; never raises, never bluffs.",
+      "starting_chips": 200
+    },
+    {
+      "name": "qwen3-8b-calling_station",
+      "model_id": "qwen3:8b",
+      "personality_id": "calling_station",
+      "personality_description": "Loose-passive. Calls everything; rarely raises. Hard to bluff.",
+      "starting_chips": 200
+    },
+    {
+      "name": "qwen3-8b-bluffer",
+      "model_id": "qwen3:8b",
+      "personality_id": "bluffer",
+      "personality_description": "Bluffs with weak hands, slow-plays strong ones. Highly deceptive.",
+      "starting_chips": 200
+    },
+    {
+      "name": "deepseek-r1-7b-tight_aggressive",
+      "model_id": "deepseek-r1:7b",
+      "personality_id": "tight_aggressive",
+      "personality_description": "Folds weak hands; raises strong ones. The textbook winning style.",
+      "starting_chips": 200
+    },
+    {
+      "name": "deepseek-r1-7b-loose_aggressive",
+      "model_id": "deepseek-r1:7b",
+      "personality_id": "loose_aggressive",
+      "personality_description": "Plays many hands aggressively; raises and bluffs constantly.",
+      "starting_chips": 200
+    },
+    {
+      "name": "deepseek-r1-7b-rock",
+      "model_id": "deepseek-r1:7b",
+      "personality_id": "rock",
+      "personality_description": "Tight-passive. Plays only premium hands; never raises, never bluffs.",
+      "starting_chips": 200
+    },
+    {
+      "name": "deepseek-r1-7b-calling_station",
+      "model_id": "deepseek-r1:7b",
+      "personality_id": "calling_station",
+      "personality_description": "Loose-passive. Calls everything; rarely raises. Hard to bluff.",
+      "starting_chips": 200
+    },
+    {
+      "name": "deepseek-r1-7b-bluffer",
+      "model_id": "deepseek-r1:7b",
+      "personality_id": "bluffer",
+      "personality_description": "Bluffs with weak hands, slow-plays strong ones. Highly deceptive.",
+      "starting_chips": 200
+    },
+    {
+      "name": "qwen3-14b-tight_aggressive",
+      "model_id": "qwen3:14b",
+      "personality_id": "tight_aggressive",
+      "personality_description": "Folds weak hands; raises strong ones. The textbook winning style.",
+      "starting_chips": 200
+    },
+    {
+      "name": "qwen3-14b-loose_aggressive",
+      "model_id": "qwen3:14b",
+      "personality_id": "loose_aggressive",
+      "personality_description": "Plays many hands aggressively; raises and bluffs constantly.",
+      "starting_chips": 200
+    },
+    {
+      "name": "qwen3-14b-rock",
+      "model_id": "qwen3:14b",
+      "personality_id": "rock",
+      "personality_description": "Tight-passive. Plays only premium hands; never raises, never bluffs.",
+      "starting_chips": 200
+    },
+    {
+      "name": "qwen3-14b-calling_station",
+      "model_id": "qwen3:14b",
+      "personality_id": "calling_station",
+      "personality_description": "Loose-passive. Calls everything; rarely raises. Hard to bluff.",
+      "starting_chips": 200
+    },
+    {
+      "name": "qwen3-14b-bluffer",
+      "model_id": "qwen3:14b",
+      "personality_id": "bluffer",
+      "personality_description": "Bluffs with weak hands, slow-plays strong ones. Highly deceptive.",
+      "starting_chips": 200
+    }
+  ],
+  "game_config": {
+    "num_tables": 30,
+    "hands_per_table": 50,
+    "ante": 2,
+    "min_bet": 5,
+    "starting_chips": 200,
+    "broke_player_policy": "rebuy",
+    "seed": 42,
+    "roster_size": 35
+  }
+}

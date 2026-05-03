@@ -1,0 +1,165 @@
+Analysing session: main_round_robin_v2
+
+Loaded: 6000 seat-rows, 21674 action-rows, 16642 reasoning-rows
+        1500 distinct hands, 35 bots, 7 models, 5 personalities
+
+=== Per-model parse-error rates ===
+                calls  errors  err_pct  mean_resp_len  broken
+model_id                                                     
+deepseek-r1:7b   1536      14      0.9          346.0   False
+gemma3:1b        3206      95      3.0          341.0   False
+llama3.1:8b      2600      33      1.3          162.0   False
+mistral          2799       7      0.3          198.0   False
+phi4-mini        2163      45      2.1          159.0   False
+qwen3:14b        1549       0      0.0          198.0   False
+qwen3:8b         2789       0      0.0          177.0   False
+
+=== Action-type frequency by model (% of betting actions) ===
+action_type     call  check  fold  raise
+model_id                                
+deepseek-r1:7b  12.9    7.9  52.0   27.1
+gemma3:1b       27.6    3.3   1.3   67.8
+llama3.1:8b     50.5    4.6  15.5   29.4
+mistral         52.0    4.9   5.1   38.0
+phi4-mini       40.6    7.5  25.2   26.6
+qwen3:14b       46.3    7.1   9.9   36.7
+qwen3:8b        42.3   16.7   7.2   33.8
+
+=== Action-type frequency by personality (% of betting actions) ===
+action_type       call  check  fold  raise
+personality_id                            
+bluffer           29.0    6.9   8.8   55.3
+calling_station   73.8    8.3   5.6   12.2
+loose_aggressive  10.5    0.9   8.2   80.4
+rock              60.6   15.6  16.8    7.0
+tight_aggressive  15.6    4.8  43.5   36.1
+
+=== Best (model x personality) by mean chip change per hand ===
+                                 hands  mean_delta  total_delta  win_rate  fold_rate
+model_id       personality_id                                                       
+qwen3:8b       tight_aggressive    200      148.21        29642      0.23       0.67
+               calling_station     200      120.26        24052      0.42       0.00
+llama3.1:8b    loose_aggressive    100       88.40         8840      0.63       0.02
+phi4-mini      loose_aggressive    100       73.05         7305      0.41       0.34
+qwen3:14b      tight_aggressive    100       42.79         4279      0.31       0.60
+gemma3:1b      calling_station     200       35.06         7013      0.40       0.01
+llama3.1:8b    tight_aggressive    250       30.45         7613      0.07       0.91
+               rock                200        4.04          808      0.32       0.36
+deepseek-r1:7b rock                100        3.38          338      0.03       0.95
+qwen3:14b      rock                100        3.35          335      0.28       0.47
+mistral        bluffer             200        2.74          549      0.55       0.05
+phi4-mini      tight_aggressive    150       -1.79         -269      0.03       0.95
+               calling_station     150       -1.99         -298      0.27       0.23
+qwen3:8b       loose_aggressive    150       -2.03         -304      0.77       0.00
+mistral        tight_aggressive    100       -2.74         -274      0.06       0.71
+deepseek-r1:7b tight_aggressive    150       -3.50         -525      0.06       0.90
+               calling_station     150       -4.22         -633      0.07       0.87
+phi4-mini      rock                200       -5.17        -1034      0.12       0.74
+gemma3:1b      rock                200       -6.33        -1266      0.38       0.13
+qwen3:8b       rock                200       -6.60        -1320      0.30       0.16
+llama3.1:8b    calling_station     200       -8.64        -1729      0.38       0.00
+deepseek-r1:7b loose_aggressive    250      -10.02        -2504      0.11       0.78
+               bluffer             200      -10.98        -2197      0.08       0.82
+qwen3:14b      bluffer             150      -13.24        -1986      0.35       0.14
+               loose_aggressive    150      -20.00        -3000      0.39       0.00
+gemma3:1b      tight_aggressive    150      -25.91        -3887      0.55       0.04
+mistral        loose_aggressive    250      -27.19        -6797      0.52       0.00
+llama3.1:8b    bluffer             200      -30.18        -6036      0.40       0.07
+mistral        rock                200      -30.26        -6051      0.30       0.14
+qwen3:14b      calling_station     100      -30.31        -3031      0.37       0.00
+qwen3:8b       bluffer             200      -40.14        -8027      0.55       0.01
+mistral        calling_station     100      -45.34        -4534      0.41       0.03
+gemma3:1b      bluffer             200      -45.72        -9145      0.51       0.00
+phi4-mini      bluffer             250      -55.36       -13841      0.17       0.39
+gemma3:1b      loose_aggressive    200      -60.43       -12086      0.51       0.00
+
+=== Best LLM (averaged across personalities) ===
+                hands  seats  mean_delta  total_delta  win_rate  fold_rate
+model_id                                                                  
+qwen3:8b          950      5       46.36        44043      0.44       0.18
+llama3.1:8b       950      5       10.00         9496      0.32       0.33
+qwen3:14b         600      5       -5.67        -3403      0.34       0.21
+deepseek-r1:7b    850      5       -6.50        -5521      0.08       0.85
+phi4-mini         850      5       -9.57        -8137      0.18       0.54
+mistral           850      5      -20.13       -17107      0.41       0.13
+gemma3:1b         950      5      -20.39       -19371      0.47       0.04
+
+=== Best personality (averaged across LLMs) ===
+                  hands  seats  mean_delta  total_delta  win_rate  fold_rate
+personality_id                                                              
+tight_aggressive   1100      7       33.25        36579      0.18       0.71
+calling_station    1100      7       18.95        20840      0.33       0.15
+rock               1200      7       -6.82        -8190      0.26       0.37
+loose_aggressive   1200      7       -7.12        -8546      0.45       0.19
+bluffer            1400      7      -29.06       -40683      0.36       0.22
+
+=== Sample reasoning excerpts (one per combo) ===
+
+--- gemma3:1b + rock (decision: check) ---
+  'I’m playing a relatively strong hand – Q♣ T♠ 7♦ J♦ Q♠. My opponent is aggressive, and I want to control the pot without risking too much. A raise is a reasonable way to keep the pressure on and potentially get a better price, but I’ll fold to avoid a potentially larger confrontation.'
+
+--- deepseek-r1:7b + loose_aggressive (decision: raise:5) ---
+  'With multiple opponents already committed and considering my aggressive play style, a minimal raise can test their hands while keeping action high.'
+
+--- gemma3:1b + calling_station (decision: raise:198) ---
+  'I’ve been looking at the board and the odds are looking pretty favorable for me.  The opponent has been relatively passive, and my hand isn’t particularly strong.  A small raise is the best way to see what they have and potentially get a good read on their hand.'
+
+--- gemma3:1b + loose_aggressive (decision: raise:198) ---
+  'I’ve been steadily building a stack, and gemma3-1b-loose_aggressive has been aggressively raising, creating a significant pot. I need to see if I can leverage a larger pot to make a big move.  A quick check would be a bit too cautious, but a raise is the best play right now.'
+
+--- deepseek-r1:7b + calling_station (decision: fold) ---
+  "My hand contains three of a kind (Queens), which isn't strong enough to justify raising with the current pot size and considering potential higher hands from opponents. Folding is safer at this point."
+
+--- deepseek-r1:7b + bluffer (decision: fold) ---
+  "My hand is a pair of fives with some weaker kickers. Considering one opponent has folded and another is active, it's safer to fold now as my hand may not hold up against higher pairs or other stronger hands."
+
+--- llama3.1:8b + rock (decision: call) ---
+  "My hand doesn't have enough strength to warrant a raise, but it's good enough to make calling worthwhile."
+
+--- phi4-mini + calling_station (decision: call) ---
+  "I prefer to see what my opponents have, so I'll call this time."
+
+--- llama3.1:8b + loose_aggressive (decision: raise:50) ---
+  "I'm going to raise big early to apply pressure and make my opponents think twice about playing tight"
+
+--- qwen3:14b + bluffer (decision: raise:5) ---
+  'I have a weak hand with no obvious strength, so I will raise aggressively to bluff and represent a strong hand.'
+
+--- gemma3:1b + bluffer (decision: raise:5) ---
+  'Okay, deepseek-r1-7b-bluffer’s call is a little aggressive, but the pot is relatively light. I’m going to bluff, betting 5 to try and get a little more information about their hand without risking too much.  Their call is a bit slow, and I need to try and get a read on them.'
+
+--- llama3.1:8b + calling_station (decision: call) ---
+  "I'll just call to see what they have, I don't want to fold out early."
+
+--- mistral + bluffer (decision: call) ---
+  'I am slow-playing my strong hand Q♠ Q♦ T♣, hoping to trap other players into overcommitting and maximizing the pot'
+
+--- mistral + rock (decision: call) ---
+  'Maintaining a tight passive play, I choose to call with my pair of eights and ace, as it is a premium hand that could improve significantly in this round.'
+
+--- gemma3:1b + tight_aggressive (decision: raise:10) ---
+  'I’m feeling relatively comfortable with my hand – 6♥ 9♣ Q♣ 2♥ A♣ – and my position is solid.  A simple raise is the best way to keep the pot moving and pressure the table without overcommitting.  I’m looking for a reasonable size and want to see what the other players are doing.'
+
+--- phi4-mini + rock (decision: fold) ---
+  "My hand contains a pair of fives which isn't premium, so I should fold."
+
+--- phi4-mini + tight_aggressive (decision: fold) ---
+  'Holding a weak starting hand with no obvious high card, I will fold to avoid wasting chips on a draw that has little chance of improving.'
+
+--- deepseek-r1:7b + rock (decision: fold) ---
+  "Given my hand and the current betting pattern, folding seems prudent as it's likely others hold better hands."
+
+--- qwen3:8b + calling_station (decision: check) ---
+  'I have a pair of tens and a pair of twos, which is a decent hand. Since I am a calling station, I will check to keep the pot small and see what others have.'
+
+--- qwen3:8b + bluffer (decision: raise:5) ---
+  'With a pair of fives and a potential for a draw, I will raise to represent strength and pressure the table, especially since one player has folded and the others are passive.'
+
+=== Generating figures into /home/geeko/projects/adam/PokerAI/runs/main_round_robin_v2/figs ===
+  saved: 01_heatmap_model_x_personality.png
+  saved: 02_chip_trajectory.png
+  saved: 03_action_mix_by_model.png
+  saved: 04_action_mix_by_personality.png
+  saved: 05_parse_error_rate_by_model.png
+
+Done. Figures in runs/main_round_robin_v2/figs/
