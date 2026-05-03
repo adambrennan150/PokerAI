@@ -517,13 +517,4 @@ def render_showdown_html(
         f'</table>'
         f'</div>'
     )
-        f'<th style="padding:6px 12px; text-align:left;">Player</th>'
-        f'<th style="padding:6px 12px; text-align:right;">Chips</th>'
-        f'<th style="padding:6px 12px; text-align:right;">Delta</th>'
-        f'<th style="padding:6px 12px; text-align:left;">Category</th>'
-        f'<th style="padding:6px 12px; text-align:left;">Hand</th>'
-        f'</tr></thead>'
-        f'<tbody>{"".join(rows_html)}</tbody>'
-        f'</table>'
-        f'</div>'
-    )
+

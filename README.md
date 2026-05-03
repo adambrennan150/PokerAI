@@ -1,6 +1,6 @@
 # Poker McPokerface
 
-Evaluating LLM agents in 5-card draw poker. Seven open-weight LLMs (1B to 14B parameters, six families) are paired with five distinct play-style personalities to produce 35 (model × personality) bot configurations, then run through a round-robin tournament and a single-elimination knockout bracket. The data answers three research questions: which (LLM × personality) combination performs best, which LLM averages best across personalities, and which personality averages best across LLMs.
+Evaluating LLM agents in 5-card draw poker. Seven open-weight LLMs (1B to 14B parameters, six families) are paired with five distinct play-style personalities to produce 35 (model × personality) bot configurations, then run through a multi-table round-robin tournament. The data answers three research questions: which (LLM × personality) combination performs best, which LLM averages best across personalities, and which personality averages best across LLMs.
 
 This is a course submission for COMP41830: Advanced Language Models.
 
@@ -18,10 +18,12 @@ For a local run instead of Colab, open it in Jupyter from the project root:
 jupyter notebook notebooks/submission.ipynb
 ```
 
+The full report (PDF) is in [`Report/COMP41830 Assignment Report.pdf`](Report/).
+
 ## What's in this repo
 
 ```
-PokerAI/
+Poker/
 ├── engine/             Pure-Python game logic (deck, hand evaluator, player, game state machine).
 │                       Zero dependencies on UI or LLM code; everything else imports from here.
 │
@@ -43,7 +45,9 @@ PokerAI/
 │
 ├── scripts/
 │   ├── round_robin.py              Main multi-table round-robin tournament driver.
-│   ├── knockout_bracket.py         Single-elimination bracket on the top 8 round-robin combos.
+│   ├── knockout_bracket.py         Single-elimination bracket script (built and validated;
+│                                   scoped out of reported findings due to compute time —
+│                                   see §7.5 of the report).
 │   ├── analyse_round_robin.py      Reusable analytics — five tables + five figures.
 │   ├── validation_*.py             Various pre-flight validation scripts.
 │   ├── pull_models.py              Idempotent `ollama pull` of every model in the roster.
@@ -57,14 +61,12 @@ PokerAI/
 │
 ├── runs/
 │   ├── main_round_robin_v2/        Canonical round-robin results (1500 hands × 35 bots).
-│   ├── knockout_bracket_v1/        Knockout bracket from the top 8 round-robin combos.
+│   ├── main_round_robin_v1/        Earlier run; kept for the v1 → v2 fix-arc evidence.
 │   └── (validation_*)              Pre-flight test runs documenting the v1 → v2 fix arc.
 │
-├── Instructions/
-│   ├── Poker Brief.pdf             The course brief.
-│   ├── Project Report template 2026.pdf  The required report structure.
-│   ├── report_draft.md             The report itself, in markdown.
-│   └── (supporting materials)
+├── figs/                Project-level diagrams (architecture, data model, etc.).
+│
+├── Report/              Final submission PDF.
 │
 ├── requirements.txt
 ├── .gitignore
@@ -73,13 +75,13 @@ PokerAI/
 
 ## Key results headline
 
-<span style="color:gray">[Numbers below are from v1 round-robin; v2 with the fix in place is in progress / canonical.]</span>
+From the canonical v2 round-robin (1500 hands across 30 tables, all 7 models contributing valid responses):
 
-- **Best LLM:** Llama 3.1 8B at +8.87 mean chips per hand, with Phi-4 Mini second at +6.87. Phi-4 Mini punches well above its 3.8B weight.
-- **Best personality:** Loose-aggressive at +8.42 mean chips per hand. Calling station is worst at -8.74, exactly as poker theory predicts (passive callers bleed chips against aggressive opponents).
-- **Best (model × personality) combo:** Phi-4 Mini + loose-aggressive at +121 chips per hand on the v1 sample (small N — see report for caveats).
+- **Best LLM:** Qwen3 8B (with `think=False`) at **+46.36 mean chips per hand**, with Llama 3.1 8B a distant second at +10.00. Notably, Qwen3 14B underperforms Qwen3 8B at -5.67 — same family, almost double the parameters, worse poker. "Bigger is better" is falsified within this comparison.
+- **Best personality:** Tight-aggressive at **+33.25 mean chips per hand** — the textbook winning style poker theory predicts. The bluffer is worst at -29.06 (raises with weak hands; gets called and punished). The calling station, second-best at +18.95, is the only result that bucks classical theory — it works only because the opponent pool contains many bluffers it can collect from.
+- **Best (model × personality) combo:** Qwen3 8B + tight-aggressive at **+148.21 chips per hand** on a 200-hand sample, with Qwen3 8B + calling-station second at +120.26.
 
-The full report is [`Instructions/report_draft.md`](Instructions/report_draft.md) (PDF version submitted alongside this repo).
+The v1 → v2 fix arc (three of seven models silenced in v1 by misconfigured token budgets and reasoning-mode toggles) is itself a methodology contribution and is documented in §9 of the report.
 
 ## Running the experiments yourself
 
@@ -97,16 +99,17 @@ pip install -r requirements.txt
 # Then pull the model roster:
 python scripts/pull_models.py
 
-# 3. Run the round-robin (takes ~17 hours)
+# 3. Run the round-robin (takes ~17 hours on a 32 GB GPU)
 export OLLAMA_KEEP_ALIVE=1h
 python -u scripts/round_robin.py 2>&1 | tee runs/main_round_robin_v2.log
 
-# 4. Run the knockout bracket on the top 8 (~6 hours)
-python -u scripts/knockout_bracket.py main_round_robin_v2 \
-    2>&1 | tee runs/knockout_bracket_v1.log
-
-# 5. Analyse the results
+# 4. Analyse the results
 python scripts/analyse_round_robin.py main_round_robin_v2
+
+# 5. (Optional) Run the knockout bracket on the top 8 — scoped out of the
+#     submitted report for compute reasons, but the script is here if you
+#     want to crown a champion (~6 hours additional):
+# python -u scripts/knockout_bracket.py main_round_robin_v2
 ```
 
 ## Methodology note: the v1 → v2 fix arc
@@ -114,6 +117,7 @@ python scripts/analyse_round_robin.py main_round_robin_v2
 The first round-robin run (v1) revealed that three of seven models — DeepSeek-R1 7B and both Qwen3 variants — returned essentially-empty responses on >99% of LLM calls. Their reasoning preambles consumed the configured token budget before any JSON was produced, leaving the parser to fall back to a safe default action on every turn.
 
 The fix has two parts:
+
 - **Per-model `num_predict` overrides** in `config/models.py`: 4096 tokens for DeepSeek-R1 (whose `<think>` block cannot be disabled by user prompt), 1024 for Qwen3.
 - **`think=False` Ollama API parameter** for the Qwen3 family (the canonical way to disable Qwen3's reasoning preamble; the prompt-level `/no_think` directive proved unreliable in isolation).
 
